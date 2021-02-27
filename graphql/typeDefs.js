@@ -32,7 +32,7 @@ const typeDefs = gql`
   # these will be our mutations
   # register is looking for input of type RegisterInput and will return the type of User
   type Mutation {
-    register(RegisterInput): User!
+    register(registerInput: RegisterInput): User!
   }
 `;
 
