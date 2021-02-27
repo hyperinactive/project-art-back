@@ -45,8 +45,8 @@ const userResolvers = {
       }
 
       // check for an existing user via username or email
-      const user = await User.find().or([{ username }, { email }]);
-      if (user === []) {
+      const user = await User.findOne().or([{ username }, { email }]);
+      if (!user) {
         // these errors will be used on the client side
         throw new UserInputError('Username and/or email is already taken', {
           // payload of errors

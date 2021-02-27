@@ -28,12 +28,15 @@ const typeDefs = gql`
   type Query {
     hello: String,
     getPosts: [Post]
+    getPost(postID: ID!): Post!  # takes in an argument of post id
   }
   # these will be our mutations
   # register is looking for input of type RegisterInput and will return the type of User
   type Mutation {
     register(registerInput: RegisterInput): User!
     login(username: String!, password: String!): User!  # since we only need 2 things, no types were created, but it CAN be done!
+    createPost(body: String!): Post!  # takes in data required to make a post
+    deletePost(postID: ID!): String!  # takes id returns a confirmation message
   }
 `;
 
