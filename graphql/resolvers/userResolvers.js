@@ -7,7 +7,18 @@ const jwt = require('jsonwebtoken');
 const { UserInputError } = require('apollo-server-express');
 
 const User = require('../../models/User');
-const validateRegisterInput = require('../../utils/validators');
+const { validateRegisterInput, validateLoginInput } = require('../../utils/validators');
+
+// generate a token
+// res contains the user data
+const generateToken = (user) => jwt.sign({
+  id: user.id,
+  email: user.email,
+  username: user.username,
+}, process.env.SECRET,
+{
+  expiresIn: '45min', // dev time, too long for prod
+});
 
 const userResolvers = {
   Mutation: {
@@ -34,9 +45,9 @@ const userResolvers = {
       }
 
       // check for an existing user via username or email
-      const user = User.find().or([{ username }, { email }]);
-      if (user) {
-        // these errors willk be used on the client side
+      const user = await User.find().or([{ username }, { email }]);
+      if (user === []) {
+        // these errors will be used on the client side
         throw new UserInputError('Username and/or email is already taken', {
           // payload of errors
           errors: {
@@ -55,22 +66,51 @@ const userResolvers = {
         createdAt: Date.now().toString(),
       });
 
+      // result of registering a new user
       const res = await newUser.save();
 
       // make a token
       // perhaps only have id in the payload?
-      const token = jwt.sign({
-        id: res.id,
-        email: res.email,
-        username: res.username,
-      }, process.env.SECRET,
-      {
-        expiresIn: '45min', // dev time, too long for prod
-      });
+      const token = generateToken(res);
 
       return {
-        ...res._doc, // where the document is stored, user data
-        id: res._id, // id is not stored in the doc
+        ...res._doc, // where the document is stored, user data, from MongoDB
+        id: res._id, // id is not stored in the doc so we extract it like this
+        token,
+      };
+    },
+    // again, no need to destructure from a type since we only need 2 things
+    async login(_, { username, password }) {
+    // destructure the validateLoginInput
+      const { errors, valid } = validateLoginInput(username, password);
+
+      if (!valid) {
+        throw new UserInputError('Not valid', { errors });
+      }
+
+      // try and find a user that matches the username and pass
+      const user = await User.findOne({ username });
+
+      // 404
+      // if no user has been found, we'll get a '[]' and not null
+      // eslint-disable-next-line eqeqeq
+      if (!user) {
+        errors.general = 'User not found';
+        throw new UserInputError('User not found', { errors });
+      }
+
+      const matchEmailPass = await bcrypt.compare(password, user.password);
+
+      if (!matchEmailPass) {
+        errors.general = 'Wrong password';
+        throw new UserInputError('Wrong password', { errors });
+      }
+
+      const token = generateToken(user);
+
+      return {
+        ...user._doc, // where the document is stored, user data, from MongoDB
+        id: user._id, // id is not stored in the doc so we extract it like this
         token,
       };
     },

@@ -33,6 +33,7 @@ const typeDefs = gql`
   # register is looking for input of type RegisterInput and will return the type of User
   type Mutation {
     register(registerInput: RegisterInput): User!
+    login(username: String!, password: String!): User!  # since we only need 2 things, no types were created, but it CAN be done!
   }
 `;
 

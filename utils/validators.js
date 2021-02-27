@@ -35,4 +35,26 @@ const validateRegisterInput = (
   };
 };
 
-module.exports = validateRegisterInput;
+const validateLoginInput = (username, password) => {
+  const errors = {};
+
+  // handle username
+  if (username.trim() === '') {
+    errors.username = 'Username empty';
+  }
+  if (password.trim() === '') {
+    errors.password = 'Password empty';
+  }
+
+  return {
+    errors,
+    // valid key will be used to let us know if there were any erros in the first place
+    // returns true if this object has no errors
+    valid: Object.keys(errors).length < 1,
+  };
+};
+
+module.exports = {
+  validateRegisterInput,
+  validateLoginInput,
+};
