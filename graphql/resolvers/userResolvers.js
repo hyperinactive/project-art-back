@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const { UserInputError } = require('apollo-server-express');
 
 const User = require('../../models/User');
+const validateRegisterInput = require('../../utils/validators');
 
 const userResolvers = {
   Mutation: {
@@ -15,6 +16,7 @@ const userResolvers = {
     async register(
       _,
       {
+        // we're expecting an input which contains username, email, pass and conf
         registerInput: {
           username, email, password, confirmPassword,
         },
@@ -23,6 +25,14 @@ const userResolvers = {
       // context,
       // info,
     ) {
+      // validate
+      const { valid, errors } = validateRegisterInput(username, email, password, confirmPassword);
+      // if there were problems take the errors from the errors obj in the validators.js
+      // throw an error containing these
+      if (!valid) {
+        throw new UserInputError('Errors', { errors });
+      }
+
       // check for an existing user via username or email
       const user = User.find().or([{ username }, { email }]);
       if (user) {
