@@ -2,44 +2,14 @@ require('dotenv').config();
 
 // init the apollo server and graphql
 const express = require('express');
-const { ApolloServer, gql } = require('apollo-server-express');
+const { ApolloServer } = require('apollo-server-express');
 
 // set up mongo
 const mongoose = require('mongoose');
 
 const { DB_URI } = require('./config');
-const Post = require('./models/Post');
-const User = require('./models/User');
-
-// set up type definitions
-// [Post] a graphql type, we have to declare it
-const typeDefs = gql`
-  type Post {
-    id: ID!,
-    body: String!,
-    createdAt: String!,
-    username: String!
-  }
-  type Query {
-    hello: String,
-    getPosts: [Post]
-  }
-`;
-
-// resolve queries, mutations and subscriptions
-const resolvers = {
-  Query: {
-    hello: () => 'Hello world!',
-    getPosts: async () => {
-      try {
-        const posts = await Post.find();
-        return posts;
-      } catch (error) {
-        throw new Error(error);
-      }
-    },
-  },
-};
+const resolvers = require('./graphql/resolvers/indexResolver');
+const typeDefs = require('./graphql/typeDefs');
 
 // feed the server with typeDefs and resolvers
 const server = new ApolloServer({ typeDefs, resolvers });
@@ -56,7 +26,7 @@ mongoose
     console.log('DB Connected');
     return app.listen({ port });
   })
-  .then((res) => {
+  .then(() => {
     console.log(`We live now boys at ${port}`);
   })
   .catch((error) => {
