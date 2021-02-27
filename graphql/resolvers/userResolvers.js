@@ -45,16 +45,14 @@ const userResolvers = {
       }
 
       // check for an existing user via username or email
-      const user = await User.findOne().or([{ username }, { email }]);
-      if (!user) {
-        // these errors will be used on the client side
-        throw new UserInputError('Username and/or email is already taken', {
-          // payload of errors
-          errors: {
-            username: 'This username is taken',
-            email: 'This email is already in use',
-          },
-        });
+      const userUsernameCheck = await User.findOne({ username });
+      if (userUsernameCheck) {
+        throw new UserInputError('Username is already taken');
+      }
+
+      const userEmailCheck = await User.findOne({ username });
+      if (userEmailCheck) {
+        throw new UserInputError('Email is already in use');
       }
 
       password = await bcrypt.hash(password, 12);

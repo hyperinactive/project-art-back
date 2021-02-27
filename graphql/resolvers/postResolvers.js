@@ -1,3 +1,5 @@
+const { AuthenticationError } = require('apollo-server-express');
+
 const Post = require('../../models/Post');
 const checkAuth = require('../../utils/checkAuth');
 
@@ -41,7 +43,24 @@ const postResolver = {
 
       return res;
     },
+    deletePost: async (_, { postID }, context) => {
+      const user = checkAuth(context);
+
+      try {
+        const post = await Post.findById(postID);
+
+        // check the ownership over the post
+        if (user.username === post.username) {
+          await post.delete();
+          return 'Post deleted successfully';
+        }
+        throw new AuthenticationError('Not allowed');
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
   },
+
 };
 
 module.exports = postResolver;
