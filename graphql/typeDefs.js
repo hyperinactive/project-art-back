@@ -7,7 +7,7 @@ const { gql } = require('apollo-server-express');
 // it is passed to a type like register(RegisterInput)
 const typeDefs = gql`
   type User {
-    id: ID!,
+    id: ID!
     email: String!
     token: String!
     username: String!
@@ -41,18 +41,18 @@ const typeDefs = gql`
   type Query {
     hello: String
     getPosts: [Post]
-    getPost(postID: ID!): Post!  # takes in an argument of post id
+    getPost(postID: ID!): Post! # takes in an argument of post id
   }
   # these will be our mutations
   # register is looking for input of type RegisterInput and will return the type of User
   type Mutation {
     register(registerInput: RegisterInput): User!
-    login(username: String!, password: String!): User!  # since we only need 2 things, no types were created, but it CAN be done!
-    createPost(body: String!): Post!  # takes in data required to make a post
-    deletePost(postID: ID!): String!  # takes id returns a confirmation message
+    login(username: String!, password: String!): User! # since we only need 2 things, no types were created, but it CAN be done!
+    createPost(body: String!): Post! # takes in data required to make a post
+    deletePost(postID: ID!): String! # takes id returns a confirmation message
     createComment(postID: String!, body: String!): Post!
     deleteComment(postID: String!, commentID: ID!): Post!
-    likePost(postID: ID!): Post!  # will work as a toggle, no need for an "unlike" mutation
+    likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
   }
 `;
 
