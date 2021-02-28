@@ -35,6 +35,10 @@ const postResolver = {
       // TODO: do the creation
       const user = checkAuth(context);
 
+      if (body.trim() === '') {
+        throw new Error('Post body is empty');
+      }
+
       const newPost = new Post({
         body,
         user: user.id,
@@ -43,6 +47,12 @@ const postResolver = {
       });
 
       const res = await newPost.save();
+
+      // subscription part
+      // after the creation of a post we want to send it with the keyword NEW_POST to all subscribers
+      // context.pubSub.publish('NEW_POST', {
+      //   newPost: res,
+      // });
 
       return res;
     },
@@ -85,6 +95,10 @@ const postResolver = {
 
       throw new UserInputError('Post not found');
     },
+  },
+  Subscription: {
+    // creating a subscription that listens to a keyword NEW_POST
+    newPost: (_, __, { pubSub }) => pubSub.asyncIterator('NEW_POST'),
   },
 };
 

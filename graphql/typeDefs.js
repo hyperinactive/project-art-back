@@ -20,6 +20,11 @@ const typeDefs = gql`
     username: String!
     comments: [Comment]!
     likes: [Like]!
+    # additional props
+    # need to be counted
+    # to reduce the computation we're gonna use a "modifier"
+    commentCount: Int!
+    likeCount: Int!
   }
   type Comment {
     id: ID!
@@ -54,6 +59,10 @@ const typeDefs = gql`
     deleteComment(postID: String!, commentID: ID!): Post!
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
   }
+  # commonly used for polls and chat-apps
+  # type Subscription {
+  #   newPost: Post!
+  # }
 `;
 
 module.exports = typeDefs;
