@@ -11,6 +11,12 @@ const userSchema = new Schema({
     type: String,
     default: Date.now().toString(),
   },
+  groups: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'groups',
+    },
+  ],
   role: {
     type: String,
     enum: ['member', 'admin', 'developer'],

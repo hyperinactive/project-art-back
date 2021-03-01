@@ -32,6 +32,17 @@ const generateToken = (user) =>
     }
   );
 
+// username and email validation
+const checkForExistingUsernme = async (username) => {
+  const usernameCheck = await User.findOne({ username });
+  if (usernameCheck) throw new UserInputError('Username is already taken');
+};
+
+const checkForExistingEmail = async (email) => {
+  const emailCheck = await User.findOne({ email });
+  if (emailCheck) throw new UserInputError('Email is already in use');
+};
+
 const userResolvers = {
   Query: {
     getUsers: async (_, __, context) => {
@@ -67,16 +78,8 @@ const userResolvers = {
         throw new UserInputError('Errors', { errors });
       }
 
-      // check for an existing user via username or email
-      const userUsernameCheck = await User.findOne({ username });
-      if (userUsernameCheck) {
-        throw new UserInputError('Username is already taken');
-      }
-
-      const userEmailCheck = await User.findOne({ email });
-      if (userEmailCheck) {
-        throw new UserInputError('Email is already in use');
-      }
+      checkForExistingUsernme(username);
+      checkForExistingEmail(email);
 
       password = await bcrypt.hash(password, 12);
 
@@ -84,7 +87,6 @@ const userResolvers = {
         email,
         username,
         password,
-        createdAt: Date.now().toString(),
       });
 
       // result of registering a new user
@@ -166,12 +168,8 @@ const userResolvers = {
 
       if (!newUser) throw new UserInputError('User not found');
 
-      const userUsernameCheck = await User.findOne({ username });
-      if (userUsernameCheck)
-        throw new UserInputError('Username is already taken');
-
-      const userEmailCheck = await User.findOne({ email });
-      if (userEmailCheck) throw new UserInputError('Email is already in use');
+      checkForExistingUsernme(username);
+      checkForExistingEmail(email);
 
       const hashedPass = await bcrypt.hash(password, 12);
       const update = { username, email, hashedPass };
