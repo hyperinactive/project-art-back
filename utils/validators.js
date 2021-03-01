@@ -1,6 +1,16 @@
+/* eslint-disable no-param-reassign */
+const validatePasswordConfirmation = (password, confirmPassword, errors) => {
+  if (password === '') {
+    errors.password = 'Password empty';
+  } else if (password !== confirmPassword) {
+    errors.confirmPassword = "Password does't match";
+  }
+  return errors;
+};
+
 const validateRegisterInput = (username, email, password, confirmPassword) => {
   // building up the error object based on the validation errors a user may encounter
-  const errors = {};
+  let errors = {};
 
   // handle username
   if (username.trim() === '') {
@@ -16,11 +26,7 @@ const validateRegisterInput = (username, email, password, confirmPassword) => {
       errors.email = 'Email not valid';
     }
   }
-  if (password === '') {
-    errors.password = 'Password empty';
-  } else if (password !== confirmPassword) {
-    errors.confirmPassword = "Password does't match";
-  }
+  errors = validatePasswordConfirmation(password, confirmPassword, errors);
 
   return {
     errors,
@@ -52,4 +58,5 @@ const validateLoginInput = (username, password) => {
 module.exports = {
   validateRegisterInput,
   validateLoginInput,
+  validatePasswordConfirmation,
 };

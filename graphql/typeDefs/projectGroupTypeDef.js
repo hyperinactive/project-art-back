@@ -5,12 +5,11 @@ const projectGroup = gql`
     id: ID!
     name: String!
     description: String!
-    passwordLocked: Boolean!
-    password: String!
     createdAt: String!
     owner: User!
     moderators: [User!]
     members: [User!]
+    memberCount: Int!
   }
 
   extend type Query {
@@ -19,6 +18,11 @@ const projectGroup = gql`
   }
   extend type Mutation {
     createProjectGroup(name: String!): ProjectGroup!
+    updateProjectGroup(
+      name: String!
+      description: String!
+      projectGroupID: ID!
+    ): ProjectGroup!
   }
 `;
 
