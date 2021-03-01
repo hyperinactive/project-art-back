@@ -9,6 +9,7 @@ const { ApolloServer } = require('apollo-server-express');
 const mongoose = require('mongoose');
 
 const resolvers = require('./graphql/resolvers/indexResolver');
+// const typeDefs = require('./graphql/typeDefsLegacy');
 const typeDefs = require('./graphql/typeDefs');
 
 // ------------------------------------------------------

@@ -27,6 +27,17 @@ const typeDefs = gql`
     commentCount: Int!
     likeCount: Int!
   }
+  type ProjectGroup {
+    id: ID!
+    name: String!
+    description: String!
+    passwordLocked: Boolean!
+    password: String!
+    createdAt: String!
+    owner: User!
+    moderators: [User!]
+    members: [User!]
+  }
   type Comment {
     id: ID!
     createdAt: String!
@@ -63,12 +74,15 @@ const typeDefs = gql`
   type Mutation {
     register(registerInput: RegisterInput): User!
     login(username: String!, password: String!): User! # since we only need 2 things, no types were created, but it CAN be done!
+    updateUser(updateUserInput: UpdateUserInput): User!
+
     createPost(body: String!): Post! # takes in data required to make a post
     deletePost(postID: ID!): String! # takes id returns a confirmation message
-    createComment(postID: String!, body: String!): Post!
+    createComment(postID: String!, body: String!): Comment!
     deleteComment(postID: String!, commentID: ID!): Comment!
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
-    updateUser(updateUserInput: UpdateUserInput): User!
+
+    # createProjectGroup(): ProjectGroup!
   }
   # commonly used for polls and chat-apps
   # type Subscription {
