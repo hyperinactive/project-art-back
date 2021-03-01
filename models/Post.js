@@ -2,13 +2,15 @@ const { model, Schema } = require('mongoose');
 
 const postSchema = new Schema({
   body: String,
-  username: String, // done via simple string, maybe provide a model?
-  createdAt: String, // default value to be set on the graphql side
-  comments: [ // array of comments, perhaps make them a separate model?
+  username: String,
+  createdAt: {
+    type: String,
+    default: Date.now().toString(),
+  },
+  comments: [
     {
-      body: String,
-      username: String,
-      createdAt: String,
+      type: Schema.Types.ObjectId,
+      ref: 'Comment',
     },
   ],
   likes: [
@@ -21,7 +23,7 @@ const postSchema = new Schema({
   // ref used for populate method in mongoose
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'users',
+    ref: 'User',
   },
 });
 

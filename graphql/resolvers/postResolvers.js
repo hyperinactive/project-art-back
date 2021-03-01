@@ -10,7 +10,12 @@ const postResolver = {
   Query: {
     getPosts: async () => {
       try {
-        const posts = await Post.find().sort({ createdAt: -1 });
+        const posts = await Post.find({})
+          .populate('comments')
+          .populate('user')
+          .sort({ createdAt: -1 })
+          .exec();
+
         return posts;
       } catch (error) {
         throw new Error(error);
@@ -18,7 +23,9 @@ const postResolver = {
     },
     getPost: async (_, { postID }) => {
       try {
-        const post = await Post.findById(postID);
+        const post = await (
+          await Post.findById(postID).populate('comments')
+        ).execPopulate();
 
         if (post) {
           return post;
@@ -41,9 +48,8 @@ const postResolver = {
 
       const newPost = new Post({
         body,
-        user: user.id,
+        user: user.id, // since the token only has id, we can't pass the user object without querying for it
         username: user.username,
-        createdAt: Date.now().toString(),
       });
 
       const res = await newPost.save();

@@ -1,9 +1,4 @@
-const validateRegisterInput = (
-  username,
-  email,
-  password,
-  confirmPassword,
-) => {
+const validateRegisterInput = (username, email, password, confirmPassword) => {
   // building up the error object based on the validation errors a user may encounter
   const errors = {};
 
@@ -24,7 +19,7 @@ const validateRegisterInput = (
   if (password === '') {
     errors.password = 'Password empty';
   } else if (password !== confirmPassword) {
-    errors.confirmPassword = 'Password does\'t match';
+    errors.confirmPassword = "Password does't match";
   }
 
   return {

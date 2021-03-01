@@ -7,7 +7,10 @@ const userSchema = new Schema({
   username: String,
   password: String,
   email: String,
-  createdAt: String,
+  createdAt: {
+    type: String,
+    default: Date.now().toString(),
+  },
 });
 
 module.exports = model('User', userSchema);

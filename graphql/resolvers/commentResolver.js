@@ -3,8 +3,9 @@ const {
   AuthenticationError,
 } = require('apollo-server-express');
 
-const Post = require('../../models/Post');
 const checkAuth = require('../../utils/checkAuth');
+const Comment = require('../../models/Comment');
+const Post = require('../../models/Post');
 
 const commentResolver = {
   Mutation: {
@@ -19,16 +20,20 @@ const commentResolver = {
         });
       }
 
-      const post = await Post.findById(postID);
+      const post = await (
+        await Post.findById(postID).populate('comments')
+      ).execPopulate();
 
-      // NOTE: not using the comments or likes as separate models
       if (post) {
-        post.comments.unshift({
+        const comment = new Comment({
           body,
+          user: user.id,
           username: user.username,
-          createdAt: Date.now().toString(),
         });
 
+        // append the comment and save the changes
+        await comment.save();
+        post.comments.unshift(comment);
         await post.save();
         return post;
       }
@@ -38,30 +43,22 @@ const commentResolver = {
       // get the username from the context
       const { username } = checkAuth(context);
 
-      const post = await Post.findById(postID);
-      console.log(post);
+      const post = await (
+        await Post.findById(postID).populate('comments', '_id')
+      ).execPopulate();
+      if (!post) throw new UserInputError('Post not found');
 
-      // find the index of the comment
-      if (post) {
-        const commentIndex = post.comments.findIndex(
-          (comment) => comment.id === commentID
-        );
+      const comment = await Comment.findById(commentID);
+      if (!comment) throw new UserInputError('Comment not found');
 
-        // check the owenership
-        if (post.comments[commentIndex].username === username) {
-          post.comments.splice(commentIndex, 1);
-          await post.save();
-          return post;
-        }
-        // these errors don't have a payload of errors cause we don't expect
-        // clients to have access to these things, eg. there will be no button to delete comments you don't own
-        // this is a safety check
+      if (comment.username !== username)
         throw new AuthenticationError('Action not allowed');
 
-        // case no post has been found
-      } else {
-        throw new UserInputError('Post not found');
-      }
+      // remove the comment that matches the id
+      post.comments.filter((currComment) => currComment.id !== commentID);
+      await comment.delete();
+      await post.save();
+      return comment;
     },
   },
 };

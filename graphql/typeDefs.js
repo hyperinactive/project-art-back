@@ -20,6 +20,7 @@ const typeDefs = gql`
     username: String!
     comments: [Comment]!
     likes: [Like]!
+    user: User!
     # additional props
     # need to be counted
     # to reduce the computation we're gonna use a "modifier"
@@ -45,7 +46,7 @@ const typeDefs = gql`
   }
   type Query {
     hello: String
-    getPosts: [Post]
+    getPosts: [Post!]
     getPost(postID: ID!): Post! # takes in an argument of post id
   }
   # these will be our mutations
@@ -56,7 +57,7 @@ const typeDefs = gql`
     createPost(body: String!): Post! # takes in data required to make a post
     deletePost(postID: ID!): String! # takes id returns a confirmation message
     createComment(postID: String!, body: String!): Post!
-    deleteComment(postID: String!, commentID: ID!): Post!
+    deleteComment(postID: String!, commentID: ID!): Comment!
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
   }
   # commonly used for polls and chat-apps

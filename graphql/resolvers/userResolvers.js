@@ -7,18 +7,25 @@ const jwt = require('jsonwebtoken');
 const { UserInputError } = require('apollo-server-express');
 
 const User = require('../../models/User');
-const { validateRegisterInput, validateLoginInput } = require('../../utils/validators');
+const {
+  validateRegisterInput,
+  validateLoginInput,
+} = require('../../utils/validators');
 
 // generate a token
 // res contains the user data
-const generateToken = (user) => jwt.sign({
-  id: user.id,
-  email: user.email,
-  username: user.username,
-}, process.env.SECRET,
-{
-  expiresIn: '45min', // dev time, too long for prod
-});
+const generateToken = (user) =>
+  jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+    },
+    process.env.SECRET,
+    {
+      expiresIn: '45min', // dev time, too long for prod
+    }
+  );
 
 const userResolvers = {
   Mutation: {
@@ -28,16 +35,16 @@ const userResolvers = {
       _,
       {
         // we're expecting an input which contains username, email, pass and conf
-        registerInput: {
-          username, email, password, confirmPassword,
-        },
-      },
-      // not using these, but they're here for educational purposes
-      // context,
-      // info,
+        registerInput: { username, email, password, confirmPassword },
+      } // not using these, but they're here for educational purposes // context, // info,
     ) {
       // validate
-      const { valid, errors } = validateRegisterInput(username, email, password, confirmPassword);
+      const { valid, errors } = validateRegisterInput(
+        username,
+        email,
+        password,
+        confirmPassword
+      );
       // if there were problems take the errors from the errors obj in the validators.js
       // throw an error containing these
       if (!valid) {
@@ -79,7 +86,7 @@ const userResolvers = {
     },
     // again, no need to destructure from a type since we only need 2 things
     async login(_, { username, password }) {
-    // destructure the validateLoginInput
+      // destructure the validateLoginInput
       const { errors, valid } = validateLoginInput(username, password);
 
       if (!valid) {
