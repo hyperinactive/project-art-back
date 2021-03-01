@@ -13,8 +13,12 @@ const projectGroup = gql`
     members: [User!]
   }
 
+  extend type Query {
+    getProjectGroups: [ProjectGroup!]
+    getProjectGroup: ProjectGroup!
+  }
   extend type Mutation {
-    createProjectGroup: ProjectGroup!
+    createProjectGroup(name: String!): ProjectGroup!
   }
 `;
 

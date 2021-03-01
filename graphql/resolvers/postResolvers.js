@@ -39,28 +39,31 @@ const postResolver = {
   Mutation: {
     // we're using the contex here, it contains the request object
     createPost: async (_, { body }, context) => {
-      // TODO: do the creation
       const user = checkAuth(context);
 
-      if (body.trim() === '') {
-        throw new Error('Post body is empty');
+      try {
+        if (body.trim() === '') {
+          throw new Error('Post body is empty');
+        }
+
+        const newPost = new Post({
+          body,
+          user: user.id, // since the token only has id, we can't pass the user object without querying for it
+          username: user.username,
+        });
+
+        const res = await newPost.save();
+
+        // subscription part
+        // after the creation of a post we want to send it with the keyword NEW_POST to all subscribers
+        // context.pubSub.publish('NEW_POST', {
+        //   newPost: res,
+        // });
+
+        return res;
+      } catch (error) {
+        throw new Error(error);
       }
-
-      const newPost = new Post({
-        body,
-        user: user.id, // since the token only has id, we can't pass the user object without querying for it
-        username: user.username,
-      });
-
-      const res = await newPost.save();
-
-      // subscription part
-      // after the creation of a post we want to send it with the keyword NEW_POST to all subscribers
-      // context.pubSub.publish('NEW_POST', {
-      //   newPost: res,
-      // });
-
-      return res;
     },
     deletePost: async (_, { postID }, context) => {
       const user = checkAuth(context);

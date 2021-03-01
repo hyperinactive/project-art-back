@@ -8,7 +8,7 @@ const { ApolloServer } = require('apollo-server-express');
 // set up mongo
 const mongoose = require('mongoose');
 
-const resolvers = require('./graphql/resolvers/indexResolver');
+const resolvers = require('./graphql/resolvers');
 // const typeDefs = require('./graphql/typeDefsLegacy');
 const typeDefs = require('./graphql/typeDefs');
 
@@ -43,7 +43,7 @@ mongoose
   })
   .then(() => {
     console.log('DB Connected');
-    return app.listen({ port });
+    return app.listen(process.env.PORT || port);
   })
   .then(() => {
     console.log(`We live now boys at ${port}`);

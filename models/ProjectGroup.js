@@ -3,7 +3,10 @@ const { model, Schema } = require('mongoose');
 const projectGroupSchema = new Schema({
   name: String,
   description: String,
-  passwordLocked: Boolean,
+  passwordLocked: {
+    type: Boolean,
+    default: false,
+  },
   password: String,
   createdAt: {
     type: String,
@@ -11,18 +14,18 @@ const projectGroupSchema = new Schema({
   },
   owner: {
     type: Schema.Types.ObjectId,
-    ref: 'owner',
+    ref: 'User',
   },
   moderators: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'mods',
+      ref: 'user',
     },
   ],
   members: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'members',
+      ref: 'user',
     },
   ],
 });

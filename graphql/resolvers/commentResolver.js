@@ -12,53 +12,62 @@ const commentResolver = {
     createComment: async (_, { postID, body }, context) => {
       const user = checkAuth(context);
 
-      if (body.trim() === '') {
-        throw new UserInputError('Empty comment', {
-          errors: {
-            body: 'Comments must not be empty',
-          },
-        });
+      try {
+        if (body.trim() === '') {
+          throw new UserInputError('Empty comment', {
+            errors: {
+              body: 'Comments must not be empty',
+            },
+          });
+        }
+
+        const post = await (
+          await Post.findById(postID).populate('comments')
+        ).execPopulate();
+
+        if (post) {
+          const comment = new Comment({
+            body,
+            user: user.id,
+            username: user.username,
+          });
+
+          // append the comment and save the changes
+          await comment.save();
+          post.comments.unshift(comment);
+          await post.save();
+          return post;
+        }
+        throw new UserInputError('Post not found');
+      } catch (error) {
+        throw new Error(error);
       }
-
-      const post = await (
-        await Post.findById(postID).populate('comments')
-      ).execPopulate();
-
-      if (post) {
-        const comment = new Comment({
-          body,
-          user: user.id,
-          username: user.username,
-        });
-
-        // append the comment and save the changes
-        await comment.save();
-        post.comments.unshift(comment);
-        await post.save();
-        return post;
-      }
-      throw new UserInputError('Post not found');
     },
     deleteComment: async (_, { postID, commentID }, context) => {
-      // get the username from the context
       const { username } = checkAuth(context);
 
-      const post = await (
-        await Post.findById(postID).populate('comments', '_id')
-      ).execPopulate();
-      if (!post) throw new UserInputError('Post not found');
+      try {
+        // get the username from the context
 
-      const comment = await Comment.findById(commentID);
-      if (!comment) throw new UserInputError('Comment not found');
+        const post = await (
+          await Post.findById(postID).populate('comments', '_id')
+        ).execPopulate();
+        if (!post) throw new UserInputError('Post not found');
 
-      if (comment.username !== username)
-        throw new AuthenticationError('Action not allowed');
+        const comment = await Comment.findById(commentID);
+        if (!comment) throw new UserInputError('Comment not found');
 
-      // remove the comment that matches the id
-      post.comments.filter((currComment) => currComment.id !== commentID);
-      await comment.delete();
-      await post.save();
-      return comment;
+        if (comment.username !== username)
+          throw new AuthenticationError('Action not allowed');
+
+        // remove the comment that matches the id
+        post.comments.filter((currComment) => currComment.id !== commentID);
+        await comment.delete();
+        await post.save();
+        return comment;
+      } catch (error) {
+        throw new Error(error);
+      }
     },
   },
 };
