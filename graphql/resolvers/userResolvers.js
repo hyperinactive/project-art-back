@@ -4,13 +4,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 // custom errors from apollo
-const { UserInputError } = require('apollo-server-express');
+const {
+  UserInputError,
+  AuthenticationError,
+} = require('apollo-server-express');
 
 const User = require('../../models/User');
 const {
   validateRegisterInput,
   validateLoginInput,
 } = require('../../utils/validators');
+const checkAuth = require('../../utils/checkAuth');
 
 // generate a token
 // res contains the user data
@@ -20,6 +24,7 @@ const generateToken = (user) =>
       id: user.id,
       email: user.email,
       username: user.username,
+      role: user.role,
     },
     process.env.SECRET,
     {
@@ -28,16 +33,27 @@ const generateToken = (user) =>
   );
 
 const userResolvers = {
+  Query: {
+    getUsers: async (_, __, context) => {
+      const user = checkAuth(context);
+
+      if (user.role !== 'developer')
+        throw new AuthenticationError('Action not allowed');
+
+      const users = await User.find({});
+      return users;
+    },
+  },
   Mutation: {
     // args is the input type (eg our registerInput)
     // register(parent, args, context, info) {
-    async register(
+    register: async (
       _,
       {
         // we're expecting an input which contains username, email, pass and conf
         registerInput: { username, email, password, confirmPassword },
       } // not using these, but they're here for educational purposes // context, // info,
-    ) {
+    ) => {
       // validate
       const { valid, errors } = validateRegisterInput(
         username,
@@ -57,7 +73,7 @@ const userResolvers = {
         throw new UserInputError('Username is already taken');
       }
 
-      const userEmailCheck = await User.findOne({ username });
+      const userEmailCheck = await User.findOne({ email });
       if (userEmailCheck) {
         throw new UserInputError('Email is already in use');
       }
@@ -85,7 +101,7 @@ const userResolvers = {
       };
     },
     // again, no need to destructure from a type since we only need 2 things
-    async login(_, { username, password }) {
+    login: async (_, { username, password }) => {
       // destructure the validateLoginInput
       const { errors, valid } = validateLoginInput(username, password);
 
@@ -116,6 +132,56 @@ const userResolvers = {
       return {
         ...user._doc, // where the document is stored, user data, from MongoDB
         id: user._id, // id is not stored in the doc so we extract it like this
+        token,
+      };
+    },
+    updateUser: async (
+      _,
+      {
+        updateUserInput: { username, email, password, confirmPassword, userID },
+      },
+      context
+    ) => {
+      const user = checkAuth(context);
+
+      if (userID !== user.id || user.role !== 'developer')
+        throw new AuthenticationError('Action not allowed');
+
+      // reusing the register input validation
+      const { valid, errors } = validateRegisterInput(
+        username,
+        email,
+        password,
+        confirmPassword
+      );
+
+      if (!valid) {
+        throw new UserInputError('Not valid', { errors });
+      }
+
+      if (password !== confirmPassword)
+        throw new UserInputError("Passwords don't match");
+
+      const newUser = await User.findById(userID);
+
+      if (!newUser) throw new UserInputError('User not found');
+
+      const userUsernameCheck = await User.findOne({ username });
+      if (userUsernameCheck)
+        throw new UserInputError('Username is already taken');
+
+      const userEmailCheck = await User.findOne({ email });
+      if (userEmailCheck) throw new UserInputError('Email is already in use');
+
+      const hashedPass = await bcrypt.hash(password, 12);
+      const update = { username, email, hashedPass };
+      await newUser.updateOne(update);
+
+      const token = generateToken(newUser);
+
+      return {
+        ...newUser._doc, // where the document is stored, user data, from MongoDB
+        id: newUser._id, // id is not stored in the doc so we extract it like this
         token,
       };
     },

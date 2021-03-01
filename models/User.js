@@ -11,6 +11,11 @@ const userSchema = new Schema({
     type: String,
     default: Date.now().toString(),
   },
+  role: {
+    type: String,
+    enum: ['member', 'admin', 'developer'],
+    default: 'member',
+  },
 });
 
 module.exports = model('User', userSchema);

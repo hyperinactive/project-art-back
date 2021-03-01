@@ -44,10 +44,19 @@ const typeDefs = gql`
     confirmPassword: String!
     email: String!
   }
+  input UpdateUserInput {
+    userID: ID!
+    username: String!
+    # placeholders: to be changed via mail or smth
+    email: String!
+    password: String!
+    confirmPassword: String!
+  }
   type Query {
     hello: String
     getPosts: [Post!]
     getPost(postID: ID!): Post! # takes in an argument of post id
+    getUsers: [User!]
   }
   # these will be our mutations
   # register is looking for input of type RegisterInput and will return the type of User
@@ -59,6 +68,7 @@ const typeDefs = gql`
     createComment(postID: String!, body: String!): Post!
     deleteComment(postID: String!, commentID: ID!): Comment!
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
+    updateUser(updateUserInput: UpdateUserInput): User!
   }
   # commonly used for polls and chat-apps
   # type Subscription {
