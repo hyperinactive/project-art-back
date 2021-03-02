@@ -35,12 +35,12 @@ const generateToken = (user) =>
 // username and email validation
 const checkForExistingUsernme = async (username) => {
   const usernameCheck = await User.findOne({ username });
-  if (usernameCheck) throw new UserInputError('Username is already taken');
+  return usernameCheck !== null;
 };
 
 const checkForExistingEmail = async (email) => {
   const emailCheck = await User.findOne({ email });
-  if (emailCheck) throw new UserInputError('Email is already in use');
+  return emailCheck !== null;
 };
 
 const userResolvers = {
@@ -78,8 +78,15 @@ const userResolvers = {
         throw new UserInputError('Errors', { errors });
       }
 
-      checkForExistingUsernme(username);
-      checkForExistingEmail(email);
+      if (await checkForExistingUsernme(username)) {
+        errors.usernameInUse = 'Username already in use';
+        throw new UserInputError('Username already in use', { errors });
+      }
+
+      if (await checkForExistingEmail(email)) {
+        errors.emailInUse = 'Email already in use';
+        throw new UserInputError('Email already in use', { errors });
+      }
 
       password = await bcrypt.hash(password, 12);
 
