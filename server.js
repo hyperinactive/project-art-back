@@ -2,6 +2,7 @@ require('dotenv').config();
 
 // init the apollo server and graphql
 const express = require('express');
+const cors = require('cors');
 // const { ApolloServer, PubSub } = require('apollo-server-express');
 const { ApolloServer } = require('apollo-server-express');
 
@@ -32,6 +33,7 @@ const server = new ApolloServer({
 
 // init the express app
 const app = express();
+app.use(cors());
 const port = 4000;
 server.applyMiddleware({ app });
 

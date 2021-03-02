@@ -46,7 +46,7 @@ const projectGroupResolver = {
           throw new UserInputError('Name already in use');
 
         await group.save();
-        return await group.populate('owner').populate('members').exec();
+        return await group.populate('owner').populate('members').execPopulate();
       } catch (error) {
         throw new Error(error);
       }

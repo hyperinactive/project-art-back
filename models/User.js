@@ -9,7 +9,7 @@ const userSchema = new Schema({
   email: String,
   createdAt: {
     type: String,
-    default: Date.now().toString(),
+    default: new Date(Date.now()).toISOString(),
   },
   groups: [
     {

@@ -95,7 +95,7 @@ const postResolver = {
         } else {
           post.likes.push({
             username,
-            createdAt: Date.now().toString(),
+            createdAt: new Date(Date.now()).toISOString(),
           });
         }
         await post.save();

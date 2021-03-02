@@ -5,7 +5,7 @@ const projectGroupSchema = new Schema({
   description: String,
   createdAt: {
     type: String,
-    default: Date.now().toString(),
+    default: new Date(Date.now()).toISOString(),
   },
   owner: {
     type: Schema.Types.ObjectId,

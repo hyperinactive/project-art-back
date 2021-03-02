@@ -5,7 +5,7 @@ const commentSchema = new Schema({
   username: String,
   createdAt: {
     type: String,
-    default: Date.now().toString(),
+    default: new Date(Date.now()).toISOString(),
   },
   post: {
     type: Schema.Types.ObjectId,
