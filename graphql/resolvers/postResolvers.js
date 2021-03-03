@@ -5,6 +5,7 @@ const {
 
 const Post = require('../../models/Post');
 const checkAuth = require('../../utils/checkAuth');
+const { validatePostInput } = require('../../utils/validators');
 
 const postResolver = {
   Query: {
@@ -40,12 +41,12 @@ const postResolver = {
     // we're using the contex here, it contains the request object
     createPost: async (_, { body }, context) => {
       const user = checkAuth(context);
+      const { valid, errors } = validatePostInput(body);
 
+      if (!valid) {
+        throw new UserInputError('Errors', { errors });
+      }
       try {
-        if (body.trim() === '') {
-          throw new Error('Post body is empty');
-        }
-
         const newPost = new Post({
           body,
           user: user.id, // since the token only has id, we can't pass the user object without querying for it
@@ -62,7 +63,7 @@ const postResolver = {
 
         return res;
       } catch (error) {
-        throw new Error(error);
+        throw new Error(error, { errors });
       }
     },
     deletePost: async (_, { postID }, context) => {

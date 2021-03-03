@@ -5,7 +5,8 @@ const postSchema = new Schema({
   username: String,
   createdAt: {
     type: String,
-    default: new Date(Date.now()).toISOString(),
+    // eslint-disable-next-line new-cap
+    default: new Date().toISOString(),
   },
   comments: [
     {
