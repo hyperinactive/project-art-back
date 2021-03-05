@@ -27,7 +27,7 @@ const post = gql`
   }
   extend type Mutation {
     createPost(body: String!): Post! # takes in data required to make a post
-    deletePost(postID: ID!): String! # takes id returns a confirmation message
+    deletePost(postID: ID!): Post! # takes id returns a confirmation message
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
   }
 `;

@@ -24,9 +24,10 @@ const postResolver = {
     },
     getPost: async (_, { postID }) => {
       try {
-        const post = await (
-          await Post.findById(postID).populate('comments')
-        ).execPopulate();
+        const post = await Post.findById(postID)
+          .populate('comments')
+          .populate('user')
+          .exec();
 
         if (post) {
           return post;
@@ -51,6 +52,7 @@ const postResolver = {
           body,
           user: user.id, // since the token only has id, we can't pass the user object without querying for it
           username: user.username,
+          createdAt: new Date().toISOString(),
         });
 
         const res = await newPost.save();
@@ -68,14 +70,17 @@ const postResolver = {
     },
     deletePost: async (_, { postID }, context) => {
       const user = checkAuth(context);
-
       try {
         const post = await Post.findById(postID);
+
+        if (!post) {
+          throw new Error('Uh oh', { message: 'no post' });
+        }
 
         // check the ownership over the post
         if (user.username === post.username) {
           await post.delete();
-          return 'Post deleted successfully';
+          return post;
         }
         throw new AuthenticationError('Not allowed');
       } catch (error) {
@@ -96,7 +101,7 @@ const postResolver = {
         } else {
           post.likes.push({
             username,
-            createdAt: new Date(Date.now()).toISOString(),
+            createdAt: new Date().toISOString(),
           });
         }
         await post.save();

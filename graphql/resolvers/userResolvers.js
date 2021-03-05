@@ -94,6 +94,7 @@ const userResolvers = {
         email,
         username,
         password,
+        createdAt: new Date().toISOString(),
       });
 
       // result of registering a new user

@@ -3,10 +3,7 @@ const { model, Schema } = require('mongoose');
 const projectGroupSchema = new Schema({
   name: String,
   description: String,
-  createdAt: {
-    type: String,
-    default: new Date().toISOString(),
-  },
+  createdAt: String,
   owner: {
     type: Schema.Types.ObjectId,
     ref: 'User',

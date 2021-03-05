@@ -39,6 +39,7 @@ const projectGroupResolver = {
           description: `create new --project ${name}`,
           owner: user.id,
           members: user.id,
+          createdAt: new Date().toISOString(),
         });
 
         const nameCheck = await ProjectGroup.find({ name });

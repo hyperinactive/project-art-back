@@ -7,10 +7,7 @@ const userSchema = new Schema({
   username: String,
   password: String,
   email: String,
-  createdAt: {
-    type: String,
-    default: new Date().toISOString(),
-  },
+  createdAt: String,
   groups: [
     {
       type: Schema.Types.ObjectId,

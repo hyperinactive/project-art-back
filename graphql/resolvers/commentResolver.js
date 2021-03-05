@@ -30,6 +30,7 @@ const commentResolver = {
             body,
             user: user.id,
             username: user.username,
+            createdAt: new Date().toISOString(),
           });
 
           // append the comment and save the changes

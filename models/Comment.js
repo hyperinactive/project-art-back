@@ -3,10 +3,7 @@ const { model, Schema } = require('mongoose');
 const commentSchema = new Schema({
   body: String,
   username: String,
-  createdAt: {
-    type: String,
-    default: new Date().toISOString(),
-  },
+  createdAt: String,
   post: {
     type: Schema.Types.ObjectId,
     ref: 'Post',

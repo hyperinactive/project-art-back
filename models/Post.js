@@ -3,11 +3,7 @@ const { model, Schema } = require('mongoose');
 const postSchema = new Schema({
   body: String,
   username: String,
-  createdAt: {
-    type: String,
-    // eslint-disable-next-line new-cap
-    default: new Date().toISOString(),
-  },
+  createdAt: String,
   comments: [
     {
       type: Schema.Types.ObjectId,
