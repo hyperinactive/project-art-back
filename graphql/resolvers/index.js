@@ -12,6 +12,10 @@ module.exports = {
     likeCount: (parent) => parent.likes.length,
     commentCount: (parent) => parent.comments.length,
   },
+  // TODO: could save some coputation, return to this
+  // PostsChunkResponse: {
+  //   hasMoreItems: (parent) => parent.posts.length < skip + limit,
+  // },
   ProjectGroup: {
     memberCount: (parent) => parent.members.length,
   },

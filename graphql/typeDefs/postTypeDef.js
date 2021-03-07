@@ -15,6 +15,10 @@ const post = gql`
     commentCount: Int!
     likeCount: Int!
   }
+  type PostsChunkResponse {
+    posts: [Post!]
+    hasMoreItems: Boolean!
+  }
   type Like {
     id: ID!
     createdAt: String!
@@ -24,6 +28,8 @@ const post = gql`
   extend type Query {
     getPosts: [Post!]
     getPost(postID: ID!): Post! # takes in an argument of post id
+    getPostsChunk(skip: Int, limit: Int!): PostsChunkResponse!
+    # offset query
   }
   extend type Mutation {
     createPost(body: String!): Post! # takes in data required to make a post
