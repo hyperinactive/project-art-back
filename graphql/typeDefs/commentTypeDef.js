@@ -9,8 +9,8 @@ const comment = gql`
   }
 
   extend type Mutation {
-    createComment(postID: String!, body: String!): Comment!
-    deleteComment(postID: String!, commentID: ID!): Comment!
+    createComment(postID: ID!, body: String!): Comment!
+    deleteComment(postID: ID!, commentID: ID!): Comment!
   }
 `;
 

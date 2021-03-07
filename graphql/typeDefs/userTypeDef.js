@@ -4,9 +4,14 @@ const user = gql`
   type User {
     id: ID!
     email: String!
+    emailVerified: Boolean!
     token: String!
     username: String!
     createdAt: String!
+    friends: [User!]
+    projectsJoined: [ProjectGroup!]
+    projectsCreated: [ProjectGroup!]
+    role: String!
   }
   input RegisterInput {
     username: String!

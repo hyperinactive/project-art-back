@@ -7,11 +7,27 @@ const userSchema = new Schema({
   username: String,
   password: String,
   email: String,
+  emailVerified: Boolean, // TODO: for email identification, hopefully soon
   createdAt: String,
-  groups: [
+  projectsJoined: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'groups',
+      ref: 'ProjectGroup',
+      joinedAt: String,
+    },
+  ],
+  projectsCreated: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'ProjectGroup',
+      joinedAt: String,
+    },
+  ],
+  friends: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      joinedAt: String,
     },
   ],
   role: {

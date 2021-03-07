@@ -1,6 +1,8 @@
 /* eslint-disable no-param-reassign */
+// don't actually throw any errors here, just collect them and pass as props
+
 const validatePasswordConfirmation = (password, confirmPassword, errors) => {
-  if (password === '') {
+  if (password.trim() === '') {
     errors.password = 'Password empty';
   } else if (password !== confirmPassword) {
     errors.confirmPassword = "Password does't match";
@@ -57,9 +59,7 @@ const validateLoginInput = (username, password) => {
 
 const validatePostInput = (body) => {
   const errors = {};
-
   if (body.trim() === '') errors.body = 'Body empty';
-
   return {
     errors,
     valid: Object.keys(errors).length < 1,

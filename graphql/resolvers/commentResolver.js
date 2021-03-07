@@ -37,7 +37,7 @@ const commentResolver = {
           await comment.save();
           post.comments.unshift(comment);
           await post.save();
-          return post;
+          return comment;
         }
         throw new UserInputError('Post not found');
       } catch (error) {
