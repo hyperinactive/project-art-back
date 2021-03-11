@@ -7,6 +7,7 @@ const checkAuth = require('../../utils/checkAuth');
 const Comment = require('../../models/Comment');
 const Post = require('../../models/Post');
 
+// TODO: have comments contain other comments
 const commentResolver = {
   Mutation: {
     createComment: async (_, { postID, body }, context) => {

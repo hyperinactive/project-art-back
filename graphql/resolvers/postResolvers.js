@@ -4,6 +4,7 @@ const {
 } = require('apollo-server-express');
 
 const Post = require('../../models/Post');
+const ProjectGroup = require('../../models/ProjectGroup');
 const checkAuth = require('../../utils/checkAuth');
 const { validatePostInput } = require('../../utils/validators');
 
@@ -131,6 +132,36 @@ const postResolver = {
       }
 
       throw new UserInputError('Post not found');
+    },
+    // TODO: to be the default way of posting stuff
+    // as to not break the current app, it remains separate
+    createProjectPost: async (_, { projectGroupID, body }, context) => {
+      const errors = {};
+      const user = checkAuth(context);
+      const project = await ProjectGroup.findById(projectGroupID).populate(
+        'members'
+      );
+      if (!project) {
+        errors.project404 = "Project doesn't exist";
+        throw new UserInputError("Project doesn't exists", { errors });
+      }
+
+      if (!project.members.find((member) => member.id === user.id)) {
+        errors.notAMember = 'Members only action';
+        throw new AuthenticationError('Action not allowed', { errors });
+      }
+      const newPost = new Post({
+        body,
+        user: user.id, // since the token only has id, we can't pass the user object without querying for it
+        username: user.username,
+        createdAt: new Date().toISOString(),
+      });
+
+      const res = await newPost.save();
+      project.posts.push(res);
+      await project.save();
+      await res.populate('user').execPopulate();
+      return res;
     },
   },
   Subscription: {

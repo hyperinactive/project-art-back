@@ -20,6 +20,12 @@ const projectGroupSchema = new Schema({
       ref: 'User',
     },
   ],
+  posts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Post',
+    },
+  ],
 });
 
 module.exports = model('ProjectGroup', projectGroupSchema);

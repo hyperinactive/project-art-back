@@ -9,12 +9,13 @@ const projectGroup = gql`
     owner: User!
     moderators: [User!]
     members: [User!]
+    posts: [Post!]
     memberCount: Int!
   }
 
   extend type Query {
     getProjectGroups: [ProjectGroup!]
-    getProjectGroup(groupID: ID!): ProjectGroup!
+    getProjectGroup(projectGroupID: ID!): ProjectGroup!
   }
   extend type Mutation {
     createProjectGroup(name: String!): ProjectGroup!

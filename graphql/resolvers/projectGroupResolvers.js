@@ -20,10 +20,13 @@ const projectGroupResolver = {
     },
     getProjectGroup: async (_, { projectGroupID }) => {
       try {
-        const group = await ProjectGroup.findById(projectGroupID);
+        const project = await ProjectGroup.findById(projectGroupID);
 
-        if (!group) throw new Error('Post not found');
-        return group;
+        if (!project) throw new Error("Project doesn't exist");
+        return await project
+          .populate('owner')
+          .populate('members')
+          .execPopulate();
       } catch (error) {
         throw new Error(error);
       }
