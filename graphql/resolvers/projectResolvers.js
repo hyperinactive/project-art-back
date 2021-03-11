@@ -58,6 +58,31 @@ const projectResolver = {
         throw new Error(error);
       }
     },
+    addMember: async (_, { projectID }, context) => {
+      const user = checkAuth(context);
+      const errors = {};
+
+      try {
+        const project = await Project.findById(projectID).populate('members');
+        if (!project) throw new Error("Project doesn't exist");
+
+        if (
+          project.members.find((member) => member.id === user.id) === undefined
+        ) {
+          project.members.push(user.id);
+        } else {
+          errors.alreadyAMember = 'Already a member';
+          throw new UserInputError('Already a member', { errors });
+        }
+        await project.save();
+        return await project
+          .populate('members')
+          .populate('owner')
+          .execPopulate();
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
     // for simplicity update functions will be split
     // TODO: have multiple ways of updating groups
     // maybe check for each update and call different update functions
@@ -70,25 +95,25 @@ const projectResolver = {
         if (name === '' || description === '')
           throw new UserInputError('Missing input');
 
-        const group = await (
+        const project = await (
           await await Project.findById(projectID).populate('owner')
         ).execPopulate();
 
         // look for existing groups
-        if (!group) throw new UserInputError("Project group doesn't exist");
-        if (group.owner.id !== user.id)
+        if (!project) throw new UserInputError("Project group doesn't exist");
+        if (project.owner.id !== user.id)
           throw new AuthenticationError('Action not allowed');
 
         const checkName = await Project.findOne({ name });
-        if (checkName && checkName.name !== group.name)
+        if (checkName && checkName.name !== project.name)
           throw new UserInputError('Name already in use');
 
         // const update = { name, description };
         // await group.updateOne(update);
-        group.name = name;
-        group.description = description;
-        await group.save();
-        const res = await group.populate('members').execPopulate();
+        project.name = name;
+        project.description = description;
+        await project.save();
+        const res = await project.populate('members').execPopulate();
         return res;
       } catch (error) {
         throw new Error(error);

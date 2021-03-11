@@ -20,6 +20,7 @@ const project = gql`
   extend type Mutation {
     createProject(name: String!): Project!
     updateProject(name: String!, description: String!, projectID: ID!): Project!
+    addMember(projectID: ID!): Project!
   }
 `;
 
