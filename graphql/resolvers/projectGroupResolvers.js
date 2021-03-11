@@ -32,6 +32,7 @@ const projectGroupResolver = {
   Mutation: {
     createProjectGroup: async (_, { name }, context) => {
       const user = checkAuth(context);
+      const errors = {};
 
       try {
         const group = new ProjectGroup({
@@ -43,9 +44,10 @@ const projectGroupResolver = {
         });
 
         const nameCheck = await ProjectGroup.find({ name });
-        if (nameCheck.length !== 0)
-          throw new UserInputError('Name already in use');
-
+        if (nameCheck.length !== 0) {
+          errors.nameInUse = 'Name already in use';
+          throw new UserInputError('Name already in use', { errors });
+        }
         await group.save();
         return await group.populate('owner').populate('members').execPopulate();
       } catch (error) {

@@ -45,14 +45,25 @@ const checkForExistingEmail = async (email) => {
 
 const userResolvers = {
   Query: {
-    getUsers: async (_, __, context) => {
-      const user = checkAuth(context);
+    // TODO: for now, just give responses to all, secure the routes later
+    getUsers: async (/* _, __,  context */) => {
+      // const user = checkAuth(context);
 
-      if (user.role !== 'developer')
-        throw new AuthenticationError('Action not allowed');
+      // if (user.role !== 'developer')
+      //   throw new AuthenticationError('Action not allowed');
 
       const users = await User.find({});
       return users;
+    },
+    getUser: async (_, { userID }) => {
+      const user = await User.findById(userID);
+      const errors = {};
+
+      if (!user) {
+        errors.userNotFound = 'User not found';
+        throw new UserInputError('UserInputError', { errors });
+      }
+      return user;
     },
   },
   Mutation: {

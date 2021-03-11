@@ -38,7 +38,7 @@ const postResolver = {
       }
     },
     getPostsChunk: async (_, { limit, skip }) => {
-      const skipDefault = skip || 0;
+      const skipDefault = skip === undefined ? 0 : skip;
       try {
         const itemCount = await Post.find({}).countDocuments();
 
@@ -53,7 +53,7 @@ const postResolver = {
         // if there is no more to fetch additional field
         return {
           posts,
-          hasMoreItems: itemCount >= skip + limit,
+          hasMoreItems: itemCount >= skipDefault + limit,
         };
       } catch (error) {
         throw new Error(error);

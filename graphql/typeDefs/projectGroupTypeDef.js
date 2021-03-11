@@ -14,7 +14,7 @@ const projectGroup = gql`
 
   extend type Query {
     getProjectGroups: [ProjectGroup!]
-    getProjectGroup: ProjectGroup!
+    getProjectGroup(groupID: ID!): ProjectGroup!
   }
   extend type Mutation {
     createProjectGroup(name: String!): ProjectGroup!

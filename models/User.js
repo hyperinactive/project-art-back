@@ -13,6 +13,20 @@ const userSchema = new Schema({
     type: Boolean,
     defautl: false,
   },
+  status: {
+    type: String,
+    default: 'lurk, lurk',
+  },
+  skills: [
+    {
+      skill: String,
+    },
+  ],
+  interests: [
+    {
+      interest: String,
+    },
+  ],
   createdAt: String,
   projectsJoined: [
     {

@@ -8,6 +8,9 @@ const user = gql`
     token: String!
     username: String!
     createdAt: String!
+    status: String!
+    interests: [String!]
+    skills: [String!]
     friends: [User!]
     projectsJoined: [ProjectGroup!]
     projectsCreated: [ProjectGroup!]
@@ -30,6 +33,7 @@ const user = gql`
 
   extend type Query {
     getUsers: [User!]
+    getUser(userID: ID!): User!
   }
   extend type Mutation {
     register(registerInput: RegisterInput): User!
