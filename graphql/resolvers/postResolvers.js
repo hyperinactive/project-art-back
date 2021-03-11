@@ -4,7 +4,7 @@ const {
 } = require('apollo-server-express');
 
 const Post = require('../../models/Post');
-const ProjectGroup = require('../../models/ProjectGroup');
+const Project = require('../../models/Project');
 const checkAuth = require('../../utils/checkAuth');
 const { validatePostInput } = require('../../utils/validators');
 
@@ -135,12 +135,10 @@ const postResolver = {
     },
     // TODO: to be the default way of posting stuff
     // as to not break the current app, it remains separate
-    createProjectPost: async (_, { projectGroupID, body }, context) => {
+    createProjectPost: async (_, { projectID, body }, context) => {
       const errors = {};
       const user = checkAuth(context);
-      const project = await ProjectGroup.findById(projectGroupID).populate(
-        'members'
-      );
+      const project = await Project.findById(projectID).populate('members');
       if (!project) {
         errors.project404 = "Project doesn't exist";
         throw new UserInputError("Project doesn't exists", { errors });

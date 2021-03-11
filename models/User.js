@@ -31,13 +31,13 @@ const userSchema = new Schema({
   projectsJoined: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'ProjectGroup',
+      ref: 'Project',
     },
   ],
   projectsCreated: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'ProjectGroup',
+      ref: 'Project',
     },
   ],
   friends: [

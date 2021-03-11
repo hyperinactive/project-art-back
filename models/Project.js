@@ -1,6 +1,6 @@
 const { model, Schema } = require('mongoose');
 
-const projectGroupSchema = new Schema({
+const projectSchema = new Schema({
   name: String,
   description: String,
   createdAt: String,
@@ -28,4 +28,4 @@ const projectGroupSchema = new Schema({
   ],
 });
 
-module.exports = model('ProjectGroup', projectGroupSchema);
+module.exports = model('Project', projectSchema);

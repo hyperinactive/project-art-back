@@ -3,14 +3,14 @@ const {
   AuthenticationError,
 } = require('apollo-server-express');
 
-const ProjectGroup = require('../../models/ProjectGroup');
+const Project = require('../../models/Project');
 const checkAuth = require('../../utils/checkAuth');
 
-const projectGroupResolver = {
+const projectResolver = {
   Query: {
-    getProjectGroups: async () => {
+    getProjects: async () => {
       try {
-        const groups = await ProjectGroup.find({})
+        const groups = await Project.find({})
           .populate('owner')
           .populate('members');
         return groups;
@@ -18,14 +18,15 @@ const projectGroupResolver = {
         throw new Error(error);
       }
     },
-    getProjectGroup: async (_, { projectGroupID }) => {
+    getProject: async (_, { projectID }) => {
       try {
-        const project = await ProjectGroup.findById(projectGroupID);
+        const project = await Project.findById(projectID);
 
         if (!project) throw new Error("Project doesn't exist");
         return await project
           .populate('owner')
           .populate('members')
+          .populate('posts')
           .execPopulate();
       } catch (error) {
         throw new Error(error);
@@ -33,12 +34,12 @@ const projectGroupResolver = {
     },
   },
   Mutation: {
-    createProjectGroup: async (_, { name }, context) => {
+    createProject: async (_, { name }, context) => {
       const user = checkAuth(context);
       const errors = {};
 
       try {
-        const group = new ProjectGroup({
+        const group = new Project({
           name,
           description: `create new --project ${name}`,
           owner: user.id,
@@ -46,7 +47,7 @@ const projectGroupResolver = {
           createdAt: new Date().toISOString(),
         });
 
-        const nameCheck = await ProjectGroup.find({ name });
+        const nameCheck = await Project.find({ name });
         if (nameCheck.length !== 0) {
           errors.nameInUse = 'Name already in use';
           throw new UserInputError('Name already in use', { errors });
@@ -61,11 +62,7 @@ const projectGroupResolver = {
     // TODO: have multiple ways of updating groups
     // maybe check for each update and call different update functions
     // or just have many different update funcs idk
-    updateProjectGroup: async (
-      _,
-      { name, description, projectGroupID },
-      context
-    ) => {
+    updateProject: async (_, { name, description, projectID }, context) => {
       const user = checkAuth(context);
 
       try {
@@ -74,7 +71,7 @@ const projectGroupResolver = {
           throw new UserInputError('Missing input');
 
         const group = await (
-          await await ProjectGroup.findById(projectGroupID).populate('owner')
+          await await Project.findById(projectID).populate('owner')
         ).execPopulate();
 
         // look for existing groups
@@ -82,7 +79,7 @@ const projectGroupResolver = {
         if (group.owner.id !== user.id)
           throw new AuthenticationError('Action not allowed');
 
-        const checkName = await ProjectGroup.findOne({ name });
+        const checkName = await Project.findOne({ name });
         if (checkName && checkName.name !== group.name)
           throw new UserInputError('Name already in use');
 
@@ -100,4 +97,4 @@ const projectGroupResolver = {
   },
 };
 
-module.exports = projectGroupResolver;
+module.exports = projectResolver;

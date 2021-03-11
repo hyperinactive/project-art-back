@@ -1,7 +1,7 @@
 const postResolvers = require('./postResolvers');
 const userResolvers = require('./userResolvers');
 const commentResolvers = require('./commentResolver');
-const projectGroupResolvers = require('./projectGroupResolvers.js');
+const projectResolvers = require('./projectResolvers.js');
 
 module.exports = {
   Post: {
@@ -16,19 +16,19 @@ module.exports = {
   // PostsChunkResponse: {
   //   hasMoreItems: (parent) => parent.posts.length < skip + limit,
   // },
-  ProjectGroup: {
+  Project: {
     memberCount: (parent) => parent.members.length,
   },
   Query: {
     ...postResolvers.Query,
     ...userResolvers.Query,
-    ...projectGroupResolvers.Query,
+    ...projectResolvers.Query,
   },
   Mutation: {
     ...userResolvers.Mutation,
     ...postResolvers.Mutation,
     ...commentResolvers.Mutation,
-    ...projectGroupResolvers.Mutation,
+    ...projectResolvers.Mutation,
   },
   // Subscription: {
   //   ...postResolvers.Subscription,

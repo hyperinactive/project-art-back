@@ -12,8 +12,8 @@ const user = gql`
     interests: [String!]
     skills: [String!]
     friends: [User!]
-    projectsJoined: [ProjectGroup!]
-    projectsCreated: [ProjectGroup!]
+    projectsJoined: [Project!]
+    projectsCreated: [Project!]
     role: String!
   }
   input RegisterInput {
