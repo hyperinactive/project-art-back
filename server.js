@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 // const { ApolloServer, PubSub } = require('apollo-server-express');
 const { ApolloServer } = require('apollo-server-express');
+// const { graphqlUploadExpress } = require('graphql-upload');
 
 // set up mongo
 const mongoose = require('mongoose');
@@ -34,6 +35,7 @@ const server = new ApolloServer({
 // init the express app
 const app = express();
 app.use(cors());
+// app.use(graphqlUploadExpress({ maxFileSize: 1000000000, maxFiles: 10 }));
 const port = 4000;
 server.applyMiddleware({ app });
 
