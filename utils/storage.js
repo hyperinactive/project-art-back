@@ -36,4 +36,13 @@ const uploadFile = async (createReadStream, filename) => {
   });
 };
 
-module.exports = uploadFile;
+const getFileStream = (fileKey) => {
+  const downloadParams = {
+    Bucket: bucketName,
+    Key: fileKey,
+  };
+
+  return s3.getObject(downloadParams).createReadStream();
+};
+
+module.exports = { uploadFile, getFileStream };

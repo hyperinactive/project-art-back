@@ -7,7 +7,7 @@ const Post = require('../../models/Post');
 const Project = require('../../models/Project');
 const checkAuth = require('../../utils/checkAuth');
 const { validatePostInput } = require('../../utils/validators');
-const uploadFile = require('../../utils/storage');
+const { uploadFile } = require('../../utils/storage');
 
 const postResolver = {
   Query: {
@@ -71,7 +71,6 @@ const postResolver = {
   Mutation: {
     // testing upload
     uploadFile: async (_, { file }) => {
-      console.log('here');
       if (!file) throw new UserInputError('File is empty');
 
       // destructuring the file, but since it is a promise we need the await keyword

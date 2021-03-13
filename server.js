@@ -1,8 +1,6 @@
 require('dotenv').config();
 
 // init the apollo server and graphql
-const express = require('express');
-const cors = require('cors');
 // const { ApolloServer, PubSub } = require('apollo-server-express');
 const { ApolloServer } = require('apollo-server-express');
 // const { graphqlUploadExpress } = require('graphql-upload');
@@ -10,8 +8,9 @@ const { ApolloServer } = require('apollo-server-express');
 // set up mongo
 const mongoose = require('mongoose');
 
+const app = require('./app');
+
 const resolvers = require('./graphql/resolvers');
-// const typeDefs = require('./graphql/typeDefsLegacy');
 const typeDefs = require('./graphql/typeDefs');
 
 // ------------------------------------------------------
@@ -32,11 +31,7 @@ const server = new ApolloServer({
   context: ({ req }) => ({ req }), // we're destructuring the req and passing it into the context
 });
 
-// init the express app
-const app = express();
-app.use(cors());
-// app.use(graphqlUploadExpress({ maxFileSize: 1000000000, maxFiles: 10 }));
-const port = 4000;
+const port = process.env.PORT || 4000;
 server.applyMiddleware({ app });
 
 // upon connecting to the db start the server
@@ -47,7 +42,7 @@ mongoose
   })
   .then(() => {
     console.log('DB Connected');
-    return app.listen(process.env.PORT || port);
+    return app.listen(port);
   })
   .then(() => {
     console.log(`We live now boys at ${port}`);

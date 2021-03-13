@@ -4,6 +4,8 @@ const postSchema = new Schema({
   body: String,
   username: String,
   createdAt: String,
+  // TODO: set up a default image path
+  imageURL: String,
   comments: [
     {
       type: Schema.Types.ObjectId,
