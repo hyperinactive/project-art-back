@@ -1,3 +1,6 @@
+const path = require('path');
+// const fs = require('fs');
+
 const {
   AuthenticationError,
   UserInputError,
@@ -60,8 +63,39 @@ const postResolver = {
         throw new Error(error);
       }
     },
+
+    // testing upload
+    uploads: (parent, args) => {
+      console.log(parent);
+      console.log(args);
+    },
   },
   Mutation: {
+    // testing upload
+    uploadFile: async (_, { file }) => {
+      console.log('here');
+      if (!file) throw new UserInputError('File is empty');
+      // destructuring the file, but since it is a promise we need the await keyword
+
+      const { createReadStream, filename, mimetype, encoding } = await file;
+      console.log(createReadStream);
+      console.log(filename);
+      console.log(mimetype);
+      console.log(encoding);
+
+      // for now, the files will be stored locally
+      // const stream = createReadStream();
+      console.log(path.join(__dirname, `../../public/images/${filename}`));
+      // const pathName = path.join(__dirname, `../../public/images/${}`);
+      // await stream.pipe(fs.createWriteStream(pathName));
+      return {
+        // url: `http://localhost:3000/images/${filename}`,
+        filename,
+        mimetype,
+        encoding,
+      };
+    },
+
     // we're using the contex here, it contains the request object
     createPost: async (_, { body }, context) => {
       const user = checkAuth(context);

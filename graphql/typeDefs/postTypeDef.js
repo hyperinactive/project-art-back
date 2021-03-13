@@ -19,6 +19,12 @@ const post = gql`
     posts: [Post!]
     hasMoreItems: Boolean!
   }
+
+  type File {
+    filename: String!
+    mimetype: String!
+    encoding: String!
+  }
   type Like {
     id: ID!
     createdAt: String!
@@ -30,12 +36,18 @@ const post = gql`
     getPost(postID: ID!): Post! # takes in an argument of post id
     getPostsChunk(skip: Int, limit: Int!): PostsChunkResponse!
     # offset query
+
+    # upload testing
+    uploads: [File]
   }
   extend type Mutation {
     createPost(body: String!): Post! # takes in data required to make a post
     deletePost(postID: ID!): Post! # takes id returns a confirmation message
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
     createProjectPost(projectID: ID!, body: String!): Post!
+
+    # upload testing
+    uploadFile(file: Upload!): File!
   }
 `;
 
