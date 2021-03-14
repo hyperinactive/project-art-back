@@ -9,7 +9,7 @@ app.use(cors());
 // a neccessary evil, not all can go though graphql
 // this way only the server can serve the images
 // and the bucket stays protected to the public
-app.get('/images/:key', (req, res) => {
+app.get('/files/:key', (req, res) => {
   const { key } = req.params;
   const readStream = getFileStream(key);
   readStream.pipe(res);

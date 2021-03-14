@@ -4,6 +4,7 @@ const postSchema = new Schema({
   body: String,
   username: String,
   createdAt: String,
+  // NOTE: potentially a separate model?
   // TODO: set up a default image path
   imageURL: String,
   comments: [

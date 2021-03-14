@@ -2,12 +2,14 @@ const {
   AuthenticationError,
   UserInputError,
 } = require('apollo-server-express');
+const uuid = require('uuid');
 
 const Post = require('../../models/Post');
 const Project = require('../../models/Project');
 const checkAuth = require('../../utils/checkAuth');
 const { validatePostInput } = require('../../utils/validators');
 const { uploadFile } = require('../../utils/storage');
+const allowedImageTypes = require('../../utils/types');
 
 const postResolver = {
   Query: {
@@ -61,12 +63,6 @@ const postResolver = {
         throw new Error(error);
       }
     },
-
-    // testing upload
-    uploads: (parent, args) => {
-      console.log(parent);
-      console.log(args);
-    },
   },
   Mutation: {
     // testing upload
@@ -74,21 +70,17 @@ const postResolver = {
       if (!file) throw new UserInputError('File is empty');
 
       // destructuring the file, but since it is a promise we need the await keyword
-      const { createReadStream, filename, mimetype, encoding } = await file;
-      console.log(filename);
-      console.log(mimetype);
-      console.log(encoding);
+      // const { createReadStream, filename, mimetype, encoding } = await file;
+      const { createReadStream, filename } = await file;
+      const key = `${uuid.v4()}${filename}`;
 
       try {
-        await uploadFile(createReadStream, filename);
+        await uploadFile(createReadStream, key);
       } catch (error) {
         throw new Error('Error uploading the file', error);
       }
       return {
-        // url: `http://localhost:3000/images/${filename}`,
-        filename,
-        mimetype,
-        encoding,
+        url: `http://localhost:3000/files/${key}`,
       };
     },
 
@@ -165,7 +157,7 @@ const postResolver = {
     },
     // TODO: to be the default way of posting stuff
     // as to not break the current app, it remains separate
-    createProjectPost: async (_, { projectID, body }, context) => {
+    createProjectPost: async (_, { projectID, body, image }, context) => {
       const errors = {};
       const user = checkAuth(context);
       const project = await Project.findById(projectID).populate('members');
@@ -178,11 +170,36 @@ const postResolver = {
         errors.notAMember = 'Members only action';
         throw new AuthenticationError('Action not allowed', { errors });
       }
+
+      let imageURL;
+      if (image) {
+        const { createReadStream, mimetype } = await image;
+
+        if (
+          !Object.values(allowedImageTypes).find((type) => type === mimetype)
+        ) {
+          errors.allowedType = 'File type not allowed';
+          throw new UserInputError('File type not allowed', { errors });
+        }
+
+        const key = `${uuid.v4()}`;
+
+        try {
+          await uploadFile(createReadStream, key);
+          imageURL = `http://localhost:4000/files/${key}`;
+        } catch (error) {
+          throw new Error('Error uploading the file', error);
+        }
+      } else {
+        imageURL = null;
+      }
+
       const newPost = new Post({
         body,
         user: user.id, // since the token only has id, we can't pass the user object without querying for it
         username: user.username,
         createdAt: new Date().toISOString(),
+        imageURL,
       });
 
       const res = await newPost.save();

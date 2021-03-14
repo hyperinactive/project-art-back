@@ -1,5 +1,4 @@
 const aws = require('aws-sdk');
-const uuid = require('uuid');
 
 const bucketName = process.env.AWS_BUCKET_NAME;
 const region = process.env.AWS_REGION;
@@ -13,11 +12,11 @@ const s3 = new aws.S3({
 });
 
 // NOTE: Node v12 or bust, Maximum call stack size exceeded error
-const uploadFile = async (createReadStream, filename) => {
+const uploadFile = async (createReadStream, key) => {
   const uploadParams = {
     Bucket: bucketName,
     Body: createReadStream(),
-    Key: `${uuid.v4()}${filename}`,
+    Key: key,
   };
 
   // .promise() on a function returns a Promise instead of a callback

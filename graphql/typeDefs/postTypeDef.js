@@ -9,6 +9,7 @@ const post = gql`
     comments: [Comment]!
     likes: [Like]!
     user: User!
+    imageURL: String
     # additional props
     # need to be counted
     # to reduce the computation we're gonna use a "modifier"
@@ -21,9 +22,7 @@ const post = gql`
   }
 
   type File {
-    filename: String!
-    mimetype: String!
-    encoding: String!
+    url: String!
   }
   type Like {
     id: ID!
@@ -36,15 +35,12 @@ const post = gql`
     getPost(postID: ID!): Post! # takes in an argument of post id
     getPostsChunk(skip: Int, limit: Int!): PostsChunkResponse!
     # offset query
-
-    # upload testing
-    uploads: [File]
   }
   extend type Mutation {
     createPost(body: String!): Post! # takes in data required to make a post
     deletePost(postID: ID!): Post! # takes id returns a confirmation message
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
-    createProjectPost(projectID: ID!, body: String!): Post!
+    createProjectPost(projectID: ID!, body: String!, image: Upload): Post!
 
     # upload testing
     uploadFile(file: Upload!): File!
