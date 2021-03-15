@@ -137,14 +137,14 @@ const userResolvers = {
       // if no user has been found, we'll get a '[]' and not null
       // eslint-disable-next-line eqeqeq
       if (!user) {
-        errors.general = 'User not found';
+        errors.username = 'User not found';
         throw new UserInputError('User not found', { errors });
       }
 
       const matchEmailPass = await bcrypt.compare(password, user.password);
 
       if (!matchEmailPass) {
-        errors.general = 'Wrong password';
+        errors.password = 'Wrong password';
         throw new UserInputError('Wrong password', { errors });
       }
 

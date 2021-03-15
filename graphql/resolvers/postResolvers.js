@@ -63,6 +63,35 @@ const postResolver = {
         throw new Error(error);
       }
     },
+    getProjectPosts: async (_, { projectID }, context) => {
+      const user = checkAuth(context);
+      const errors = {};
+      try {
+        const project = await Project.findById(projectID);
+        if (!project) throw new Error("Project doesn't exist");
+
+        await project.populate('members').execPopulate();
+        if (!project.members.find((member) => member.id === user.id)) {
+          errors.notAMember = 'Members only action';
+          throw new AuthenticationError('Action not allowed', { errors });
+        }
+
+        const posts = await project.populate('comments').execPopulate();
+
+        await posts
+          .populate({
+            path: 'posts',
+            populate: {
+              path: 'user',
+            },
+          })
+          .execPopulate();
+
+        return await posts.posts;
+      } catch (error) {
+        throw new Error('Error', error);
+      }
+    },
   },
   Mutation: {
     // testing upload

@@ -34,7 +34,7 @@ const post = gql`
     getPosts: [Post!]
     getPost(postID: ID!): Post! # takes in an argument of post id
     getPostsChunk(skip: Int, limit: Int!): PostsChunkResponse!
-    # offset query
+    getProjectPosts(projectID: ID!): [Post!]
   }
   extend type Mutation {
     createPost(body: String!): Post! # takes in data required to make a post
