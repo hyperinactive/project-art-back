@@ -4,6 +4,7 @@ const {
 } = require('apollo-server-express');
 
 const Project = require('../../models/Project');
+const User = require('../../models/User');
 const checkAuth = require('../../utils/checkAuth');
 
 const projectResolver = {
@@ -32,6 +33,19 @@ const projectResolver = {
         throw new Error(error);
       }
     },
+    getUserProjects: async (_, __, context) => {
+      const user = checkAuth(context);
+
+      try {
+        const projects = await User.findById(user.id);
+
+        await projects.populate('owner').populate('projects');
+        console.log(projects);
+        return projects.projects;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
   },
   Mutation: {
     createProject: async (_, { name }, context) => {
@@ -52,7 +66,11 @@ const projectResolver = {
           errors.nameInUse = 'Name already in use';
           throw new UserInputError('Name already in use', { errors });
         }
+        const fUser = await User.findById(user.id);
+
+        fUser.projects.push(group.id);
         await group.save();
+        await fUser.save();
         return await group.populate('owner').populate('members').execPopulate();
       } catch (error) {
         throw new Error(error);

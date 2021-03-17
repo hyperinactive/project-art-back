@@ -106,6 +106,8 @@ const userResolvers = {
         username,
         password,
         createdAt: new Date().toISOString(),
+        friends: [],
+        projects: [],
       });
 
       // result of registering a new user
@@ -201,6 +203,35 @@ const userResolvers = {
         id: newUser._id, // id is not stored in the doc so we extract it like this
         token,
       };
+    },
+    // TODO: obviously we need to accept or decline these, placeholder
+    addFriend: async (_, { username }, context) => {
+      const user = checkAuth(context);
+
+      try {
+        const reciever = await User.findOne({ username });
+        const sender = await User.findById(user.id);
+        const errors = {};
+
+        if (!reciever) {
+          errors.username = "User with that username doesn't exist";
+          throw new UserInputError('No user found', { errors });
+        }
+
+        if (reciever.friends.find((friend) => friend.id === user.id)) {
+          errors.alreadyFriends = 'Already friends';
+          throw new UserInputError('Input error', { errors });
+        }
+
+        reciever.friends.push(user.id);
+        sender.friends.push(reciever.id);
+        await reciever.save();
+        await sender.save();
+
+        return reciever;
+      } catch (error) {
+        throw new Error(error);
+      }
     },
   },
 };

@@ -4,9 +4,15 @@ const { model, Schema } = require('mongoose');
 // and we've got restrictions there
 // there is no need to implement them here
 const userSchema = new Schema({
-  username: String,
+  username: {
+    type: String,
+    unique: true, // index
+  },
+  email: {
+    type: String,
+    unique: true,
+  },
   password: String,
-  email: String,
 
   // TODO: for email identification, hopefully soon
   emailVerified: {
@@ -28,13 +34,7 @@ const userSchema = new Schema({
     },
   ],
   createdAt: String,
-  projectsJoined: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Project',
-    },
-  ],
-  projectsCreated: [
+  projects: [
     {
       type: Schema.Types.ObjectId,
       ref: 'Project',

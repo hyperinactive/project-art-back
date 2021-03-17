@@ -12,8 +12,7 @@ const user = gql`
     interests: [String!]
     skills: [String!]
     friends: [User!]
-    projectsJoined: [Project!]
-    projectsCreated: [Project!]
+    projects: [Project!]
     role: String!
   }
   input RegisterInput {
@@ -34,11 +33,13 @@ const user = gql`
   extend type Query {
     getUsers: [User!]
     getUser(userID: ID!): User!
+    getUserProjects: [Project!]
   }
   extend type Mutation {
     register(registerInput: RegisterInput): User!
     login(username: String!, password: String!): User! # since we only need 2 things, no types were created, but it CAN be done!
     updateUser(updateUserInput: UpdateUserInput): User!
+    addFriend(username: String!): User!
   }
 `;
 
