@@ -14,6 +14,7 @@ const user = gql`
     friends: [User!]
     projects: [Project!]
     role: String!
+    imageURL: String
   }
   input RegisterInput {
     username: String!
@@ -34,6 +35,7 @@ const user = gql`
     getUsers: [User!]
     getUser(userID: ID!): User!
     getUserProjects: [Project!]
+    getFriends: [User!]
   }
   extend type Mutation {
     register(registerInput: RegisterInput): User!

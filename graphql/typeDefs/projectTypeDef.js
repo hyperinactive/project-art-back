@@ -16,6 +16,7 @@ const project = gql`
   extend type Query {
     getProjects: [Project!]
     getProject(projectID: ID!): Project!
+    getProjectMembers(projectID: ID!): [User!]
   }
   extend type Mutation {
     createProject(name: String!): Project!

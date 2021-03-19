@@ -200,6 +200,10 @@ const postResolver = {
         throw new AuthenticationError('Action not allowed', { errors });
       }
 
+      if (body.trim() === '') {
+        throw new UserInputError("Body can't be empty");
+      }
+
       let imageURL;
       if (image) {
         const { createReadStream, mimetype } = await image;

@@ -65,6 +65,17 @@ const userResolvers = {
       }
       return user;
     },
+    getFriends: async (_, __, context) => {
+      const user = checkAuth(context);
+
+      try {
+        const fUser = await User.findById(user.id).populate('friends');
+
+        return fUser.friends;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
   },
   Mutation: {
     // args is the input type (eg our registerInput)
