@@ -19,6 +19,10 @@ const validateRegisterInput = (username, email, password, confirmPassword) => {
     errors.username = 'Username empty';
   }
 
+  if (password.length < 6) {
+    errors.passwordLength = 'Password must be at least 7 characters long';
+  }
+
   // handle email
   if (email.trim() === '') {
     errors.email = 'Email empty';

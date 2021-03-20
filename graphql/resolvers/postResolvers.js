@@ -215,11 +215,12 @@ const postResolver = {
           throw new UserInputError('File type not allowed', { errors });
         }
 
-        const key = `${uuid.v4()}`;
+        const key = `${uuid.v4()}.${mimetype.split('/')[1]}`;
 
         try {
           await uploadFile(createReadStream, key);
-          imageURL = `http://localhost:4000/files/${key}`;
+          // imageURL = `http://localhost:4000/${key}`;
+          imageURL = `${key}`;
         } catch (error) {
           throw new Error('Error uploading the file', error);
         }

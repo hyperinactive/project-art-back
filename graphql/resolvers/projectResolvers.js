@@ -32,20 +32,20 @@ const projectResolver = {
         throw new Error(error);
       }
     },
-    getProjectMembers: async (_, { projectID }, context) => {
+    getProjectMembers: async (_, { projectID }) => {
       try {
-        const user = checkAuth(context);
+        // const user = checkAuth(context);
         const project = await Project.findById(projectID);
 
         if (!project) throw new UserInputError("Project doesn't exist");
 
         // check the membership
         await project.populate('members').execPopulate();
-        if (
-          project.members.find((member) => member.id === user.id) === undefined
-        ) {
-          throw new AuthenticationError('Member-only action');
-        }
+        // if (
+        //   project.members.find((member) => member.id === user.id) === undefined
+        // ) {
+        //   throw new AuthenticationError('Member-only action');
+        // }
 
         return project.members;
       } catch (error) {

@@ -2,12 +2,10 @@
 /* eslint-disable no-underscore-dangle */
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const uuid = require('uuid');
 
 // custom errors from apollo
-const {
-  UserInputError,
-  AuthenticationError,
-} = require('apollo-server-express');
+const { UserInputError } = require('apollo-server-express');
 
 const User = require('../../models/User');
 const {
@@ -15,6 +13,8 @@ const {
   validateLoginInput,
 } = require('../../utils/validators');
 const checkAuth = require('../../utils/checkAuth');
+const { uploadFile, deleteFile } = require('../../utils/storage');
+const allowedImageTypes = require('../../utils/types');
 
 // generate a token
 // res contains the user data
@@ -119,6 +119,7 @@ const userResolvers = {
         createdAt: new Date().toISOString(),
         friends: [],
         projects: [],
+        imageURL: null,
       });
 
       // result of registering a new user
@@ -169,49 +170,54 @@ const userResolvers = {
         token,
       };
     },
-    updateUser: async (
-      _,
-      {
-        updateUserInput: { username, email, password, confirmPassword, userID },
-      },
-      context
-    ) => {
+    updateUser: async (_, { username, status, skills, image }, context) => {
       const user = checkAuth(context);
+      const fUser = await User.findById(user.id);
+      const errors = {};
 
-      if (userID !== user.id || user.role !== 'developer')
-        throw new AuthenticationError('Action not allowed');
-
-      // reusing the register input validation
-      const { valid, errors } = validateRegisterInput(
-        username,
-        email,
-        password,
-        confirmPassword
-      );
-
-      if (!valid) {
-        throw new UserInputError('Not valid', { errors });
+      if (!fUser) {
+        throw new UserInputError('No user found');
       }
 
-      if (password !== confirmPassword)
-        throw new UserInputError("Passwords don't match");
+      // if the username stays the same don't check for an existing username
+      if (username !== fUser.username) {
+        checkForExistingUsernme(username);
+      }
 
-      const newUser = await User.findById(userID);
+      let url = null;
+      if (image && image !== fUser.imageURL) {
+        // if the user already have an avatar, delete it form the storage
+        if (fUser.imageURL) {
+          await deleteFile(fUser.imageURL);
+        }
 
-      if (!newUser) throw new UserInputError('User not found');
+        const { createReadStream, mimetype } = await image;
 
-      checkForExistingUsernme(username);
-      checkForExistingEmail(email);
+        if (
+          !Object.values(allowedImageTypes).find((type) => type === mimetype)
+        ) {
+          errors.allowedType = 'File type not allowed';
+          throw new UserInputError('File type not allowed', { errors });
+        }
 
-      const hashedPass = await bcrypt.hash(password, 12);
-      const update = { username, email, hashedPass };
-      await newUser.updateOne(update);
+        const key = `${uuid.v4()}.${mimetype.split('/')[1]}`;
+        try {
+          await uploadFile(createReadStream, key);
+          // url = `http://localhost:4000/${key}`;
+          url = `${key}`;
+        } catch (error) {
+          throw new Error('Error uploading the file', error);
+        }
+      }
 
-      const token = generateToken(newUser);
+      const update = { username, skills, status, imageURL: url };
+      await fUser.updateOne(update);
+
+      const token = generateToken(fUser);
 
       return {
-        ...newUser._doc, // where the document is stored, user data, from MongoDB
-        id: newUser._id, // id is not stored in the doc so we extract it like this
+        ...fUser._doc, // where the document is stored, user data, from MongoDB
+        id: fUser._id, // id is not stored in the doc so we extract it like this
         token,
       };
     },

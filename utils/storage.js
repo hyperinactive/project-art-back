@@ -28,7 +28,6 @@ const uploadFile = async (createReadStream, key) => {
         console.log(err);
         reject(err);
       } else {
-        console.log(data);
         resolve(data);
       }
     });
@@ -44,4 +43,22 @@ const getFileStream = (fileKey) => {
   return s3.getObject(downloadParams).createReadStream();
 };
 
-module.exports = { uploadFile, getFileStream };
+const deleteFile = async (key) =>
+  new Promise((resolve, reject) => {
+    s3.deleteObject(
+      {
+        Bucket: bucketName,
+        Key: key,
+      },
+      (err, data) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      }
+    );
+  });
+
+module.exports = { uploadFile, getFileStream, deleteFile };

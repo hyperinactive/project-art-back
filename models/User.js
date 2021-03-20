@@ -23,11 +23,11 @@ const userSchema = new Schema({
     type: String,
     default: 'lurk, lurk',
   },
-  skills: [
-    {
-      skill: String,
-    },
-  ],
+  skills: {
+    type: String,
+    default: 'very skilled YEP',
+  },
+  imageURL: String,
   interests: [
     {
       interest: String,
