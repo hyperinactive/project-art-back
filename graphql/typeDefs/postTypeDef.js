@@ -9,6 +9,7 @@ const post = gql`
     comments: [Comment]!
     likes: [Like]!
     user: User!
+    project: Project!
     imageURL: String
     # additional props
     # need to be counted

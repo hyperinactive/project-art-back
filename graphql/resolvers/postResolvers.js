@@ -31,6 +31,16 @@ const postResolver = {
         const post = await Post.findById(postID)
           .populate('comments')
           .populate('user')
+          .populate('project', 'id')
+          .populate({
+            path: 'project',
+            populate: [
+              {
+                path: 'members',
+                select: 'id',
+              },
+            ],
+          })
           .exec();
 
         if (post) {
@@ -229,6 +239,7 @@ const postResolver = {
       const newPost = new Post({
         body,
         user: user.id, // since the token only has id, we can't pass the user object without querying for it
+        project: project.id,
         username: user.username,
         createdAt: new Date().toISOString(),
         imageURL,
