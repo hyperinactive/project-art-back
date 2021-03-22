@@ -27,7 +27,11 @@ const projectResolver = {
         const project = await Project.findById(projectID);
 
         if (!project) throw new Error("Project doesn't exist");
-        return await project.populate('owner').populate('posts').execPopulate();
+        return await project
+          .populate('owner')
+          .populate('posts')
+          .populate('members', 'id')
+          .execPopulate();
       } catch (error) {
         throw new Error(error);
       }

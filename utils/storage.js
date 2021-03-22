@@ -34,13 +34,21 @@ const uploadFile = async (createReadStream, key) => {
   });
 };
 
-const getFileStream = (fileKey) => {
+const getFileStream = async (key, res) => {
   const downloadParams = {
     Bucket: bucketName,
-    Key: fileKey,
+    Key: key,
   };
+  // const stream = await s3.getObject(downloadParams).createReadStream();
+  // return s3.getObject(downloadParams).promise();
 
-  return s3.getObject(downloadParams).createReadStream();
+  return new Promise((resolve, reject) => {
+    s3.getObject(downloadParams)
+      .createReadStream()
+      .on('end', () => resolve())
+      .on('error', (error) => reject(error))
+      .pipe(res);
+  });
 };
 
 const deleteFile = async (key) =>

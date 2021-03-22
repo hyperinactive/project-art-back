@@ -76,9 +76,7 @@ const postResolver = {
           throw new AuthenticationError('Action not allowed', { errors });
         }
 
-        const posts = await project.populate('comments').execPopulate();
-
-        await posts
+        await project
           .populate({
             path: 'posts',
             populate: {
@@ -87,7 +85,7 @@ const postResolver = {
           })
           .execPopulate();
 
-        return await posts.posts;
+        return project.posts;
       } catch (error) {
         throw new Error('Error', error);
       }
@@ -220,7 +218,7 @@ const postResolver = {
         try {
           await uploadFile(createReadStream, key);
           // imageURL = `http://localhost:4000/${key}`;
-          imageURL = `${key}`;
+          imageURL = key;
         } catch (error) {
           throw new Error('Error uploading the file', error);
         }
