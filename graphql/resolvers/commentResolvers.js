@@ -12,14 +12,17 @@ const commentResolver = {
   Mutation: {
     createComment: async (_, { postID, body }, context) => {
       const user = checkAuth(context);
+      const errors = {};
 
       try {
         if (body.trim() === '') {
-          throw new UserInputError('Empty comment', {
-            errors: {
-              body: 'Comments must not be empty',
-            },
-          });
+          errors.body = 'Comments must not be empty';
+          throw new UserInputError('Empty comment', { errors });
+        }
+
+        if (body.length > 200) {
+          errors.bodyLength = 'Comments cannot be longer than 200 characters';
+          throw new UserInputError('Comment length', { errors });
         }
 
         const post = await (

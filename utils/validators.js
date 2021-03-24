@@ -7,21 +7,35 @@ const validatePasswordConfirmation = (password, confirmPassword, errors) => {
   } else if (password !== confirmPassword) {
     errors.confirmPassword = "Password does't match";
   }
-  return errors;
 };
 
-const validateRegisterInput = (username, email, password, confirmPassword) => {
-  // building up the error object based on the validation errors a user may encounter
-  let errors = {};
-
-  // handle username
+const validateLength = (username, password, errors) => {
   if (username.trim() === '') {
     errors.username = 'Username empty';
+  }
+
+  if (password.trim() === '') {
+    errors.password = 'Password empty';
+  }
+
+  if (username.length > 15) {
+    errors.passwordLength = 'Username cannot be longer than 15 characters';
   }
 
   if (password.length < 6) {
     errors.passwordLength = 'Password must be at least 7 characters long';
   }
+
+  if (password.length > 25) {
+    errors.passwordLength = 'Password cannot be longer than 25 characters';
+  }
+};
+
+const validateRegisterInput = (username, email, password, confirmPassword) => {
+  // building up the error object based on the validation errors a user may encounter
+  const errors = {};
+
+  validateLength(username, password, errors);
 
   // handle email
   if (email.trim() === '') {
@@ -32,7 +46,7 @@ const validateRegisterInput = (username, email, password, confirmPassword) => {
       errors.email = 'Email not valid';
     }
   }
-  errors = validatePasswordConfirmation(password, confirmPassword, errors);
+  validatePasswordConfirmation(password, confirmPassword, errors);
 
   return {
     errors,
@@ -64,6 +78,8 @@ const validateLoginInput = (username, password) => {
 const validatePostInput = (body) => {
   const errors = {};
   if (body.trim() === '') errors.body = 'Body empty';
+  if (body.length > 200)
+    errors.bodyLength = 'Post body cannot be longer than 200 characters';
   return {
     errors,
     valid: Object.keys(errors).length < 1,
