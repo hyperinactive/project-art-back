@@ -183,12 +183,22 @@ const Mutation = {
       token,
     };
   },
-  // TODO: obviously we need to accept or decline these, placeholder
-  addFriend: async (_, { username }, context) => {
+  // TODO: obviously we need to accept or decline these, placeholder code, LUL
+  addFriend: async (_, { userID, username }, context) => {
     const user = checkAuth(context);
 
+    if (userID === undefined && username === undefined) {
+      throw new Error('No data provided');
+    }
+
     try {
-      const reciever = await User.findOne({ username });
+      let reciever;
+      if (userID) {
+        reciever = await User.findById(userID);
+      } else {
+        reciever = await User.findOne({ username });
+      }
+
       const sender = await User.findById(user.id);
       const errors = {};
 

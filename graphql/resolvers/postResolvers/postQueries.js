@@ -1,4 +1,7 @@
-const { AuthenticationError } = require('apollo-server-express');
+const {
+  AuthenticationError,
+  UserInputError,
+} = require('apollo-server-express');
 const Post = require('../../../models/Post');
 const Project = require('../../../models/Project');
 const checkAuth = require('../../../utils/checkAuth');
@@ -59,6 +62,59 @@ const Query = {
       return {
         posts,
         hasMoreItems: itemCount >= skipDefault + limit,
+      };
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+  getPostsFeed: async (_, { projectID, cursor, skip }, context) => {
+    const user = checkAuth(context);
+    const errors = {};
+
+    try {
+      const project = await Project.findById(projectID);
+      if (!project) throw new Error("Project doesn't exist");
+
+      await project.populate('members').execPopulate();
+      if (!project.members.find((member) => member.id === user.id)) {
+        errors.notAMember = 'Members only action';
+        throw new AuthenticationError('Action not allowed', { errors });
+      }
+
+      await project.populate('posts').execPopulate();
+      const { posts } = project;
+
+      // no cursor provided, just fetch the latest few posts
+      // else try and find its index
+      let cursorIndex = posts.length - 1;
+      if (cursor !== undefined) {
+        cursorIndex = posts.findIndex(
+          (post) => post.id.toString() === cursor.toString()
+        );
+
+        if (cursorIndex === -1) {
+          errors.cursorNotFound =
+            "Cursor doesn't exist, please check the cursor ID";
+          throw new UserInputError('Cursor not found', { errors });
+        }
+      }
+
+      // sorted by creation time oldest -> newest
+      const res = [];
+
+      // NOTE:
+      // starting from 1 to avoid sending the cursor object
+      // don't forget to include the 0 item
+      for (let i = 1; i <= skip; i += 1) {
+        if (cursorIndex - i >= 0) {
+          res.unshift(posts[cursorIndex - i]);
+        }
+      }
+
+      return {
+        posts: res,
+        hasMoreItems: cursorIndex - skip > 0,
+        nextCursor: res[0].id || null,
       };
     } catch (error) {
       throw new Error(error);

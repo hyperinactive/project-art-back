@@ -46,7 +46,7 @@ const user = gql`
       skills: String!
       image: Upload
     ): User!
-    addFriend(username: String!): User!
+    addFriend(username: String, userID: ID): User!
   }
 `;
 
