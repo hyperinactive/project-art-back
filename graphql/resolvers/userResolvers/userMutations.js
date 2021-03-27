@@ -37,7 +37,7 @@ const generateToken = (user) =>
     },
     process.env.SECRET,
     {
-      expiresIn: '45min', // dev time, too long for prod
+      expiresIn: '45min',
     }
   );
 

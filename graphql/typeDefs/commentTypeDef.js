@@ -6,6 +6,12 @@ const comment = gql`
     createdAt: String!
     username: String!
     body: String!
+    user: User!
+    post: Post!
+  }
+
+  extend type Query {
+    getComments(postID: ID!): [Comment!]
   }
 
   extend type Mutation {

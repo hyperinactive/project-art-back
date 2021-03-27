@@ -1,30 +1,63 @@
-const {
-  UserInputError,
-  AuthenticationError,
-} = require('apollo-server-express');
+const { AuthenticationError, ApolloError } = require('apollo-server-express');
+
+const { UserInputError } = require('apollo-server-express');
 
 const checkAuth = require('../../utils/checkAuth');
 const Comment = require('../../models/Comment');
 const Post = require('../../models/Post');
 
-// TODO: have comments contain other comments
 const commentResolver = {
+  Query: {
+    getComments: async (_, { postID }, context) => {
+      const user = checkAuth(context);
+
+      const post = await Post.findById(postID);
+
+      if (!post) throw new UserInputError("Post doesn't exist");
+      await post
+        .populate({
+          path: 'project',
+          populate: [
+            {
+              path: 'members',
+              select: 'id',
+            },
+          ],
+        })
+        .execPopulate();
+      if (!post.project.members.find((member) => member.id === user.id))
+        throw new AuthenticationError('Action not allowed');
+
+      await post
+        .populate('comments')
+        .populate({
+          path: 'comments',
+          populate: [
+            {
+              path: 'user',
+              model: 'User',
+            },
+          ],
+        })
+        .execPopulate();
+      return post.comments;
+    },
+  },
   Mutation: {
     createComment: async (_, { postID, body }, context) => {
       const user = checkAuth(context);
       const errors = {};
 
+      if (body.trim() === '') errors.body = 'Comments must not be empty';
+      if (body.length > 150)
+        errors.bodyLength = 'Comments cannot be longer than 200 characters';
+
+      if (Object.keys(errors).length > 0)
+        throw new ApolloError('InputValidationError', 'INVALID_INPUT', {
+          errors,
+        });
+
       try {
-        if (body.trim() === '') {
-          errors.body = 'Comments must not be empty';
-          throw new UserInputError('Empty comment', { errors });
-        }
-
-        if (body.length > 200) {
-          errors.bodyLength = 'Comments cannot be longer than 200 characters';
-          throw new UserInputError('Comment length', { errors });
-        }
-
         const post = await (
           await Post.findById(postID).populate('comments')
         ).execPopulate();
@@ -45,7 +78,7 @@ const commentResolver = {
         }
         throw new UserInputError('Post not found');
       } catch (error) {
-        throw new Error(error);
+        throw new ApolloError('InternalError', { error });
       }
     },
     deleteComment: async (_, { postID, commentID }, context) => {
@@ -71,7 +104,7 @@ const commentResolver = {
         await post.save();
         return comment;
       } catch (error) {
-        throw new Error(error);
+        throw new ApolloError('InternalError', { error });
       }
     },
   },
