@@ -148,8 +148,8 @@ const Mutation = {
       checkForExistingUsernme(username);
     }
 
-    let url = null;
-    if (image && image !== fUser.imageURL) {
+    let url = fUser.imageURL;
+    if (image) {
       // if the user already have an avatar, delete it form the storage
       if (fUser.imageURL) {
         await deleteFile(fUser.imageURL);
@@ -172,6 +172,23 @@ const Mutation = {
       }
     }
 
+    // TODO: need a better way of validating
+    if (username.trim() === '') errors.username = 'Username empty';
+
+    if (username.length > 15)
+      errors.usernameLength = 'Username cannot be longer than 15 characters';
+
+    if (status.trim() === '') status = 'lurk, lurk';
+    if (status.length > 25)
+      errors.statusLength = 'Status cannot be longer than 25 characters';
+
+    if (skills.trim() === '') skills = 'very skilled YEP';
+    if (skills.length > 30)
+      errors.skillsLength = 'Skills cannot be longer than 30 characters';
+
+    if (Object.keys(errors).length > 0)
+      throw new UserInputError('InvalidInput', { errors });
+
     const update = { username, skills, status, imageURL: url };
     await fUser.updateOne(update);
 
@@ -192,32 +209,33 @@ const Mutation = {
     }
 
     try {
-      let reciever;
-      if (userID) {
-        reciever = await User.findById(userID);
+      let receiver;
+      if (userID !== undefined) {
+        receiver = await User.findById(userID);
       } else {
-        reciever = await User.findOne({ username });
+        receiver = await User.findOne({ username });
       }
 
       const sender = await User.findById(user.id);
-      const errors = {};
 
-      if (!reciever) {
-        errors.username = "User with that username doesn't exist";
-        throw new UserInputError('No user found', { errors });
+      if (!receiver) {
+        throw new UserInputError('No user found');
       }
 
-      if (reciever.friends.find((friend) => friend.id === user.id)) {
-        errors.alreadyFriends = 'Already friends';
-        throw new UserInputError('Input error', { errors });
+      if (
+        receiver.friends.find(
+          (friend) => friend.toString() === user.id.toString()
+        )
+      ) {
+        throw new UserInputError('Already friends');
       }
 
-      reciever.friends.push(user.id);
-      sender.friends.push(reciever.id);
-      await reciever.save();
+      receiver.friends.push(user.id);
+      sender.friends.push(receiver.id);
+      await receiver.save();
       await sender.save();
 
-      return reciever;
+      return receiver;
     } catch (error) {
       throw new Error(error);
     }

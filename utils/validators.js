@@ -19,7 +19,7 @@ const validateLength = (username, password, errors) => {
   }
 
   if (username.length > 15) {
-    errors.passwordLength = 'Username cannot be longer than 15 characters';
+    errors.usernameLength = 'Username cannot be longer than 15 characters';
   }
 
   if (password.length < 6) {
@@ -91,4 +91,5 @@ module.exports = {
   validateLoginInput,
   validatePasswordConfirmation,
   validatePostInput,
+  validateLength,
 };

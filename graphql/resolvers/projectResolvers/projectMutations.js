@@ -1,6 +1,7 @@
 const {
   UserInputError,
   AuthenticationError,
+  ApolloError,
 } = require('apollo-server-express');
 
 const Project = require('../../../models/Project');
@@ -19,7 +20,7 @@ const Mutation = {
         throw new UserInputError('Name already in use', { errors });
       }
 
-      if (name.length > 13) {
+      if (name.length > 20) {
         errors.nameLength = 'Name too long';
         throw new UserInputError('Name cannot be longer than 13 characters');
       }
@@ -38,8 +39,8 @@ const Mutation = {
       await group.save();
       await fUser.save();
       return await group.populate('owner').populate('members').execPopulate();
-    } catch (error) {
-      throw new Error(error);
+    } catch {
+      throw new ApolloError('Uh oh', 'BAD_USER_INPUT', { errors });
     }
   },
   addMember: async (_, { projectID }, context) => {
