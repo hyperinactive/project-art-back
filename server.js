@@ -1,13 +1,13 @@
 require('dotenv').config();
 
 // init the apollo server and graphql
-// const { ApolloServer, PubSub } = require('apollo-server-express');
 const { ApolloServer } = require('apollo-server-express');
 // const { graphqlUploadExpress } = require('graphql-upload');
 
 // set up mongo
 const mongoose = require('mongoose');
 
+// const pubSub = PubSub();
 const app = require('./app');
 
 const resolvers = require('./graphql/resolvers');
@@ -28,7 +28,10 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   // context: ({ req }) => ({ req, pubSub }), // we're destructuring the req and passing it into the context
-  context: ({ req }) => ({ req }), // we're destructuring the req and passing it into the context
+  context: ({ req }) => ({ req }),
+  // subscriptions: {
+  //   path: '/subscriptions',
+  // },
 });
 
 const port = process.env.PORT || 4000;

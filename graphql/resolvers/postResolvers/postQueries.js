@@ -67,7 +67,7 @@ const Query = {
       throw new Error(error);
     }
   },
-  getPostsFeed: async (_, { projectID, cursor, skip }, context) => {
+  getPostsFeed: async (_, { projectID, cursor, skip = 10 }, context) => {
     const user = checkAuth(context);
     const errors = {};
 
@@ -81,12 +81,32 @@ const Query = {
         throw new AuthenticationError('Action not allowed', { errors });
       }
 
+      if (project.posts.length === 0) {
+        return {
+          res: [],
+          hasMoreItems: false,
+          cursor: null,
+        };
+      }
+
       await project.populate('posts').execPopulate();
+      await project
+        .populate({
+          path: 'posts',
+          populate: [
+            {
+              path: 'user',
+              model: 'User',
+            },
+          ],
+        })
+        .execPopulate();
       const { posts } = project;
+      // console.log(Object.values(posts));
 
       // no cursor provided, just fetch the latest few posts
       // else try and find its index
-      let cursorIndex = posts.length - 1;
+      let cursorIndex = posts.length;
       if (cursor !== undefined) {
         cursorIndex = posts.findIndex(
           (post) => post.id.toString() === cursor.toString()

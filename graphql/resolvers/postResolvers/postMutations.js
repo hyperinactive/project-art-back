@@ -119,7 +119,8 @@ const Mutation = {
     }
 
     if (body.trim() === '') {
-      throw new UserInputError("Body can't be empty");
+      errors.body = "Body can't be empty";
+      throw new UserInputError("Body can't be empty", { errors });
     }
 
     let imageURL;
