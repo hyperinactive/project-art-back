@@ -164,7 +164,9 @@ const Mutation = {
 
       const key = `${uuid.v4()}.${mimetype.split('/')[1]}`;
       try {
-        await uploadFile(createReadStream, key);
+        await uploadFile(createReadStream, key)
+          .then((data) => console.log(data))
+          .catch((err) => console.log(err));
         // url = `http://localhost:4000/${key}`;
         url = `${key}`;
       } catch (error) {

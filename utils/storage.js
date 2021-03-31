@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const aws = require('aws-sdk');
 
 const bucketName = process.env.AWS_BUCKET_NAME;
@@ -12,12 +13,20 @@ const s3 = new aws.S3({
 });
 
 // NOTE: Node v12 or bust, Maximum call stack size exceeded error
+// eslint-disable-next-line consistent-return
 const uploadFile = async (createReadStream, key) => {
   const uploadParams = {
     Bucket: bucketName,
     Body: createReadStream(),
     Key: key,
   };
+
+  // try {
+  //   return s3.upload(uploadParams).promise();
+  // } catch (error) {
+  //   console.log(error);
+  //   // throw new Error(error);
+  // }
 
   // .promise() on a function returns a Promise instead of a callback
   // return s3.upload(uploadParams).promise();
@@ -49,6 +58,13 @@ const getFileStream = async (key, res) => {
       .on('error', (error) => reject(error))
       .pipe(res);
   });
+
+  // try {
+  //   return s3.getObject(downloadParams).createReadStream().pipe(res);
+  // } catch (error) {
+  //   console.log(error);
+  //   // throw new Error(error);
+  // }
 };
 
 const deleteFile = async (key) =>
