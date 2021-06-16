@@ -39,7 +39,7 @@ server.applyMiddleware({ app });
 
 // upon connecting to the db start the server
 mongoose
-  .connect(process.env.DB_URI, {
+  .connect(process.env.DB_URI_DEV, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
