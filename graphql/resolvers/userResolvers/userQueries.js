@@ -1,19 +1,22 @@
-const { UserInputError } = require('apollo-server-express');
+const {
+  UserInputError,
+  AuthenticationError,
+} = require('apollo-server-express');
 
 const checkAuth = require('../../../utils/checkAuth');
 const User = require('../../../models/User');
 
 const Query = {
-  // TODO: for now, just give responses to all, secure the routes later
-  getUsers: async (/* _, __,  context */) =>
-    // const user = checkAuth(context);
-
-    // if (user.role !== 'developer')
-    //   throw new AuthenticationError('Action not allowed');
-
-    // const users = await User.find({});
-    // return users;
-    null,
+  getUsers: async (_, __, context) => {
+    checkAuth(context);
+    let users = null;
+    try {
+      users = await User.find({});
+    } catch (error) {
+      throw new AuthenticationError('Action not allowed', { error });
+    }
+    return users;
+  },
   getUser: async (_, { userID }) => {
     const errors = {};
 
