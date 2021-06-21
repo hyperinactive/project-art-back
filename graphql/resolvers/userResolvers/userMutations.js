@@ -191,8 +191,15 @@ const Mutation = {
     if (Object.keys(errors).length > 0)
       throw new UserInputError('InvalidInput', { errors });
 
-    const update = { username, skills, status, imageURL: url };
-    await fUser.updateOne(update);
+    // const update = { username, skills, status, imageURL: url };
+    // await fUser.updateOne(update);
+
+    fUser.username = username;
+    fUser.skills = skills;
+    fUser.status = status;
+    fUser.imageURL = url;
+
+    await fUser.save();
 
     const token = generateToken(fUser);
 

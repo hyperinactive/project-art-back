@@ -11,7 +11,11 @@ app.use(cors());
 // and the bucket stays protected to the public
 app.get('/files/:key', (req, res) => {
   const { key } = req.params;
-  getFileStream(key, res);
+  try {
+    getFileStream(key, res);
+  } catch (error) {
+    console.log(error);
+  }
   // const readStream = getFileStream(key);
   // readStream.pipe(res);
 });

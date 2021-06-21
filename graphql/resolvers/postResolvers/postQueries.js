@@ -131,11 +131,17 @@ const Query = {
         }
       }
 
-      return {
+      const returnObj = {
         posts: res,
         hasMoreItems: cursorIndex - skip > 0,
         nextCursor: res[0].id || null,
       };
+
+      // console.log({ returnObj });
+      // console.log(`cursor: ${res[0].body || null}`);
+      // returnObj.posts.forEach((e) => console.log(e.body));
+
+      return returnObj;
     } catch (error) {
       throw new Error(error);
     }

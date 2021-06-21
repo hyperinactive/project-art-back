@@ -62,6 +62,8 @@ const Mutation = {
         await project.save();
 
         const fUser = await User.findById(user.id);
+        fUser.projects.push(project.id);
+        await fUser.save();
 
         return fUser;
       }
