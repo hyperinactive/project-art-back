@@ -16,10 +16,13 @@ const messageResolver = {
         if (recipient.id === user.id)
           throw new UserInputError("You're not even supposed to make these");
 
+        const pair = [user.id, toUserID];
         const messages = await Message.find({
-          fromUser: user.id,
-          toUser: toUserID,
-        }).sort({ createdAt: -1 });
+          fromUser: { $in: pair },
+          toUser: { $in: pair },
+        })
+          .populate('toUser', 'id username')
+          .populate('fromUser', 'id username');
 
         return messages;
       } catch (error) {

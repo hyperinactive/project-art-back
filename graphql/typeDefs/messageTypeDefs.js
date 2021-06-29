@@ -9,7 +9,7 @@ const message = gql`
     toUser: User!
   }
   extend type Query {
-    getMessages(toUserID: String!): [Message]!
+    getMessages(toUserID: String!): [Message!]
   }
   extend type Mutation {
     sendMessage(toUserID: String!, content: String!): Message!
