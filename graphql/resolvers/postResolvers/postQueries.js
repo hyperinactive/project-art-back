@@ -4,7 +4,7 @@ const {
 } = require('apollo-server-express');
 const Post = require('../../../models/Post');
 const Project = require('../../../models/Project');
-const checkAuth = require('../../../utils/checkAuth');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
 
 const Query = {
   getPosts: async () => {
@@ -67,8 +67,8 @@ const Query = {
       throw new Error(error);
     }
   },
-  getPostsFeed: async (_, { projectID, cursor, skip = 10 }, context) => {
-    const user = checkAuth(context);
+  getPostsFeed: async (_, { projectID, cursor, skip = 10 }, { req }) => {
+    const user = authenticateHTTP(req);
     const errors = {};
 
     try {
@@ -146,8 +146,8 @@ const Query = {
       throw new Error(error);
     }
   },
-  getProjectPosts: async (_, { projectID }, context) => {
-    const user = checkAuth(context);
+  getProjectPosts: async (_, { projectID }, { req }) => {
+    const user = authenticateHTTP(req);
     const errors = {};
     try {
       const project = await Project.findById(projectID);

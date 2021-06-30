@@ -6,11 +6,11 @@ const {
 
 const Project = require('../../../models/Project');
 const User = require('../../../models/User');
-const checkAuth = require('../../../utils/checkAuth');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
 
 const Mutation = {
-  createProject: async (_, { name }, context) => {
-    const user = checkAuth(context);
+  createProject: async (_, { name }, { req }) => {
+    const user = authenticateHTTP(req);
     const errors = {};
 
     try {
@@ -43,8 +43,8 @@ const Mutation = {
       throw new ApolloError('Uh oh', 'BAD_USER_INPUT', { errors });
     }
   },
-  addMember: async (_, { projectID }, context) => {
-    const user = checkAuth(context);
+  addMember: async (_, { projectID }, { req }) => {
+    const user = authenticateHTTP(req);
     const errors = {};
 
     try {
@@ -75,8 +75,8 @@ const Mutation = {
   // TODO: have multiple ways of updating groups
   // maybe check for each update and call different update functions
   // or just have many different update funcs idk
-  updateProject: async (_, { name, description, projectID }, context) => {
-    const user = checkAuth(context);
+  updateProject: async (_, { name, description, projectID }, { req }) => {
+    const user = authenticateHTTP(req);
     const errors = {};
 
     try {

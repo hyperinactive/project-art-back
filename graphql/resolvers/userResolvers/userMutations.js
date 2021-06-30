@@ -10,7 +10,7 @@ const {
 } = require('../../../utils/validators');
 
 const User = require('../../../models/User');
-const checkAuth = require('../../../utils/checkAuth');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
 const { uploadFile, deleteFile } = require('../../../utils/storage');
 const allowedImageTypes = require('../../../utils/types');
 
@@ -134,8 +134,8 @@ const Mutation = {
       token,
     };
   },
-  updateUser: async (_, { username, status, skills, image }, context) => {
-    const user = checkAuth(context);
+  updateUser: async (_, { username, status, skills, image }, { req }) => {
+    const user = authenticateHTTP(req);
     const fUser = await User.findById(user.id);
     const errors = {};
 
@@ -210,8 +210,8 @@ const Mutation = {
     };
   },
   // TODO: obviously we need to accept or decline these, placeholder code, LUL
-  addFriend: async (_, { userID, username }, context) => {
-    const user = checkAuth(context);
+  addFriend: async (_, { userID, username }, { req }) => {
+    const user = authenticateHTTP(req);
 
     if (userID === undefined && username === undefined) {
       throw new Error('No data provided');

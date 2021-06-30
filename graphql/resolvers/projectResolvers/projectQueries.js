@@ -2,7 +2,7 @@ const { UserInputError } = require('apollo-server-express');
 
 const Project = require('../../../models/Project');
 const User = require('../../../models/User');
-const checkAuth = require('../../../utils/checkAuth');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
 
 const Query = {
   getProjects: async () => {
@@ -52,8 +52,8 @@ const Query = {
       throw new Error(error);
     }
   },
-  getUserProjects: async (_, __, context) => {
-    const user = checkAuth(context);
+  getUserProjects: async (_, __, { req }) => {
+    const user = authenticateHTTP(req);
 
     try {
       const fUser = await User.findById(user.id);

@@ -1,15 +1,14 @@
 const { AuthenticationError, ApolloError } = require('apollo-server-express');
-
 const { UserInputError } = require('apollo-server-express');
 
-const checkAuth = require('../../utils/checkAuth');
+const authenticateHTTP = require('../../utils/authenticateHTTP');
 const Comment = require('../../models/Comment');
 const Post = require('../../models/Post');
 
 const commentResolver = {
   Query: {
-    getComments: async (_, { postID }, context) => {
-      const user = checkAuth(context);
+    getComments: async (_, { postID }, { req }) => {
+      const user = authenticateHTTP(req);
 
       const post = await Post.findById(postID);
 
@@ -44,8 +43,8 @@ const commentResolver = {
     },
   },
   Mutation: {
-    createComment: async (_, { postID, body }, context) => {
-      const user = checkAuth(context);
+    createComment: async (_, { postID, body }, { req }) => {
+      const user = authenticateHTTP(req);
       const errors = {};
 
       if (body.trim() === '') errors.body = 'Comments must not be empty';
@@ -81,8 +80,8 @@ const commentResolver = {
         throw new ApolloError('InternalError', { error });
       }
     },
-    deleteComment: async (_, { postID, commentID }, context) => {
-      const { username } = checkAuth(context);
+    deleteComment: async (_, { postID, commentID }, { req }) => {
+      const { username } = authenticateHTTP(req);
 
       try {
         // get the username from the context

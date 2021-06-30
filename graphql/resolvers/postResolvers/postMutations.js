@@ -6,7 +6,7 @@ const uuid = require('uuid');
 
 const Post = require('../../../models/Post');
 const Project = require('../../../models/Project');
-const checkAuth = require('../../../utils/checkAuth');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
 const { validatePostInput } = require('../../../utils/validators');
 const { uploadFile } = require('../../../utils/storage');
 const allowedImageTypes = require('../../../utils/types');
@@ -32,8 +32,8 @@ const Mutation = {
   },
 
   // we're using the contex here, it contains the request object
-  createPost: async (_, { body }, context) => {
-    const user = checkAuth(context);
+  createPost: async (_, { body }, { req }) => {
+    const user = authenticateHTTP(req);
     const { valid, errors } = validatePostInput(body);
 
     if (!valid) {
@@ -49,19 +49,13 @@ const Mutation = {
 
       const res = await newPost.save();
 
-      // subscription part
-      // after the creation of a post we want to send it with the keyword NEW_POST to all subscribers
-      // context.pubSub.publish('NEW_POST', {
-      //   newPost: res,
-      // });
-
       return res;
     } catch (error) {
       throw new Error(error, { errors });
     }
   },
-  deletePost: async (_, { postID }, context) => {
-    const user = checkAuth(context);
+  deletePost: async (_, { postID }, { req }) => {
+    const user = authenticateHTTP(req);
     try {
       const post = await Post.findById(postID);
 
@@ -79,8 +73,8 @@ const Mutation = {
       throw new Error(error);
     }
   },
-  likeTogglePost: async (_, { postID }, context) => {
-    const { username } = checkAuth(context);
+  likeTogglePost: async (_, { postID }, { req }) => {
+    const { username } = authenticateHTTP(req);
 
     const post = await Post.findById(postID);
 
@@ -104,9 +98,9 @@ const Mutation = {
   },
   // TODO: to be the default way of posting stuff
   // as to not break the current app, it remains separate
-  createProjectPost: async (_, { projectID, body, image }, context) => {
+  createProjectPost: async (_, { projectID, body, image }, { req }) => {
     const errors = {};
-    const user = checkAuth(context);
+    const user = authenticateHTTP(req);
     const project = await Project.findById(projectID).populate('members');
     if (!project) {
       errors.project404 = "Project doesn't exist";

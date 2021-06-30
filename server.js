@@ -19,7 +19,7 @@ const startApolloServer = async () => {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: ({ req }) => ({ req, pubsub }),
+    context: ({ req, connection }) => ({ req, pubsub, connection }),
   });
 
   const httpServer = http.createServer(app);
@@ -33,7 +33,7 @@ const startApolloServer = async () => {
 
   try {
     httpServer.listen(PORT);
-    console.log(`{server ==> Look alive boys`);
+    console.log(`server ==> Look alive boys`);
   } catch (error) {
     console.log('Apollo server error');
     console.log(error);

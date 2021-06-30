@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { AuthenticationError } = require('apollo-server-express');
 
-const authenticate = (context) => {
-  const authHeader = context.req.headers.authorization;
+const authenticate = (req) => {
+  const authHeader = req.headers.authorization;
 
   if (authHeader) {
     // get the bearer token
