@@ -34,6 +34,59 @@ const messageResolver = {
         console.log(error);
       }
     },
+    getUserMessages: async (_, __, { req }) => {
+      const user = authenticateHTTP(req);
+      try {
+        const { friends } = await User.findById(user.id).populate(
+          'friends',
+          'id username'
+        );
+
+        // NOTE: to avoid async calls inside loops
+        // make just 2 calls for all messages and users and match them here
+        // using a map to avoid O(n*m) when matching messages with users
+        const mapObj = {};
+        friends.forEach((e) => {
+          // console.log(e.id);
+          mapObj[e.id] = {
+            id: e.id,
+            username: e.username,
+            messages: [],
+          };
+        });
+
+        const messages = await Message.find({
+          toUser: user.id,
+        })
+          .populate('toUser', 'id username')
+          .populate('fromUser', 'id username');
+
+        Object.entries(messages).forEach((message) => {
+          mapObj[message[1].fromUser.id].messages = [
+            ...mapObj[message[1].fromUser.id].messages,
+            message[1],
+          ];
+        });
+
+        // normalize the response
+        const normalizedRes = [];
+        Object.entries(mapObj).forEach((entry) => {
+          normalizedRes.push({
+            user: {
+              id: entry[1].id,
+              username: entry[1].username,
+            },
+            messages: entry[1].messages,
+            latestMessage:
+              entry[1].messages[entry[1].messages.length - 1] || null,
+          });
+        });
+
+        return normalizedRes;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
   },
   Mutation: {
     sendMessage: async (_, { toUserID, content }, { req, pubsub }) => {

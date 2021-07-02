@@ -8,8 +8,17 @@ const message = gql`
     fromUser: User!
     toUser: User!
   }
+
+  # necessary evil, can't think of better way
+  type UserMessagesResponse {
+    user: User!
+    messages: [Message!]
+    latestMessage: Message
+  }
+
   extend type Query {
     getMessages(toUserID: String!): [Message!]
+    getUserMessages: [UserMessagesResponse!]
   }
   extend type Mutation {
     sendMessage(toUserID: String!, content: String!): Message!
