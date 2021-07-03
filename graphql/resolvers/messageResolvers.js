@@ -4,6 +4,7 @@ const {
   ApolloError,
   withFilter,
 } = require('apollo-server-express');
+const { ObjectId } = require('mongoose').Types;
 
 const authenticateHTTP = require('../../utils/authenticateHTTP');
 const authenticateSocket = require('../../utils/authenticateSocket');
@@ -36,10 +37,11 @@ const messageResolver = {
     },
     getUserMessages: async (_, __, { req }) => {
       const user = authenticateHTTP(req);
+
       try {
         const { friends } = await User.findById(user.id).populate(
           'friends',
-          'id username'
+          'id username imageURL'
         );
 
         // NOTE: to avoid async calls inside loops
@@ -51,21 +53,34 @@ const messageResolver = {
           mapObj[e.id] = {
             id: e.id,
             username: e.username,
+            imageURL: e.imageURL,
             messages: [],
           };
         });
 
+        const userID = ObjectId(user.id);
         const messages = await Message.find({
-          toUser: user.id,
+          $or: [{ toUser: userID }, { fromUser: userID }],
         })
+          // .or([{ 'fromUser.id': userID }, { 'toUser.id': userID }])
           .populate('toUser', 'id username')
           .populate('fromUser', 'id username');
+        // .or([{ 'toUser.id': user.id, 'fromUser.id': user.id }]);
 
         Object.entries(messages).forEach((message) => {
-          mapObj[message[1].fromUser.id].messages = [
-            ...mapObj[message[1].fromUser.id].messages,
-            message[1],
-          ];
+          // check the correct key in the map
+          const match = message[1].fromUser.id !== user.id ? 'from' : 'to';
+          if (match === 'from') {
+            mapObj[message[1].fromUser.id].messages = [
+              ...mapObj[message[1].fromUser.id].messages,
+              message[1],
+            ];
+          } else {
+            mapObj[message[1].toUser.id].messages = [
+              ...mapObj[message[1].toUser.id].messages,
+              message[1],
+            ];
+          }
         });
 
         // normalize the response
@@ -75,6 +90,7 @@ const messageResolver = {
             user: {
               id: entry[1].id,
               username: entry[1].username,
+              imageURL: entry[1].imageURL,
             },
             messages: entry[1].messages,
             latestMessage:
@@ -82,8 +98,30 @@ const messageResolver = {
           });
         });
 
+        // normalizedRes.sort((a, b) => {
+        //   if (
+        //     a.latestMessage &&
+        //     b.latestMessage &&
+        //     a.latestMessage.createdAt &&
+        //     b.latestMessage.createdAt &&
+        //     a.latestMessage.createdAt > b.latestMessage.createdAt
+        //   ) {
+        //     return 1;
+        //   }
+
+        //   if (
+        //     a.latestMessage &&
+        //     !b.latestMessage &&
+        //     a.latestMessage.createdAt &&
+        //     b.latestMessage.createdAt
+        //   )
+        //     return -1;
+        //   return 1;
+        // });
+
         return normalizedRes;
       } catch (error) {
+        console.log(error);
         throw new Error(error);
       }
     },
@@ -110,6 +148,17 @@ const messageResolver = {
         if (!recipient) throw new UserInputError('User not found');
         if (recipient.id === user.id)
           throw new UserInputError('You really that lonely?');
+
+        let hasFriendBool = false;
+        Object.entries(recipient.friends).forEach((friend) => {
+          if (friend[1].toString() === user.id.toString()) {
+            hasFriendBool = true;
+          }
+        });
+
+        if (!hasFriendBool) {
+          throw new UserInputError('No friendship, no messaging');
+        }
 
         const message = new Message({
           toUser: recipient.id,
