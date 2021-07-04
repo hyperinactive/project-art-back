@@ -23,12 +23,12 @@ const message = gql`
   }
 
   extend type Query {
-    getMessages(toUserID: String!): [Message!]
+    getMessages(toUserID: ID!): [Message!]
     getUserMessages: [UserMessagesResponse!]
-    getUserMessagesFeed(userID: String!, cursorTimestamp: String): MessageFeed!
+    getUserMessagesFeed(userID: ID!, cursorTimestamp: String): MessageFeed!
   }
   extend type Mutation {
-    sendMessage(toUserID: String!, content: String!): Message!
+    sendMessage(toUserID: ID!, content: String!): Message!
   }
   extend type Subscription {
     newMessage: Message!

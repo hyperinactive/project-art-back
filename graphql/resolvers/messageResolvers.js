@@ -87,7 +87,9 @@ const messageResolver = {
                 toUser: { $in: pair },
               })
                 .populate('toUser', 'id username')
-                .populate('fromUser', 'id username');
+                .populate('fromUser', 'id username')
+                .sort({ createdAt: -1 });
+
               resolve(latestMessage);
             } catch (error) {
               console.log(error);
