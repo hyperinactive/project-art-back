@@ -26,7 +26,11 @@ const post = gql`
     nextCursor: ID
     hasMoreItems: Boolean!
   }
-
+  type PostFeed {
+    posts: [Post!]
+    nextCursor: String
+    hasMoreItems: Boolean!
+  }
   type File {
     url: String!
   }
@@ -42,6 +46,7 @@ const post = gql`
     getPostsChunk(skip: Int, limit: Int!): PostsChunkResponse!
     getProjectPosts(projectID: ID!): [Post!]
     getPostsFeed(projectID: ID!, cursor: ID, skip: Int): PostsCursorResponse!
+    getFeed(projectID: ID!, cursorTimestamp: String): PostFeed!
   }
   extend type Mutation {
     createPost(body: String!): Post! # takes in data required to make a post

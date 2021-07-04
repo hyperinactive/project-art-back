@@ -32,7 +32,7 @@ const Mutation = {
   },
 
   // we're using the contex here, it contains the request object
-  createPost: async (_, { body }, { req }) => {
+  createPost: async (_, { projectID, body }, { req }) => {
     const user = authenticateHTTP(req);
     const { valid, errors } = validatePostInput(body);
 
@@ -45,6 +45,7 @@ const Mutation = {
         user: user.id, // since the token only has id, we can't pass the user object without querying for it
         username: user.username,
         createdAt: new Date().toISOString(),
+        project: projectID,
       });
 
       const res = await newPost.save();

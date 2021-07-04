@@ -58,6 +58,7 @@ const messageResolver = {
           };
         });
 
+        // TODO: async await loop to limit the number of messages sent
         const userID = ObjectId(user.id);
         const messages = await Message.find({
           $or: [{ toUser: userID }, { fromUser: userID }],
@@ -120,6 +121,49 @@ const messageResolver = {
         // });
 
         return normalizedRes;
+      } catch (error) {
+        console.log(error);
+        throw new Error(error);
+      }
+    },
+    getUserMessagesFeed: async (_, { userID, cursorTimestamp }, { req }) => {
+      authenticateHTTP(req);
+      const limit = 20;
+
+      try {
+        const fUser = await User.findById(userID);
+        if (!fUser) throw new Error('UserID....');
+
+        let messages = [];
+        if (cursorTimestamp !== undefined) {
+          messages = await Message.find({
+            createdAt: { $lt: cursorTimestamp },
+            $or: [{ toUser: userID }, { fromUser: userID }],
+          })
+            .populate('fromUser', 'id username')
+            .populate('toUser', 'id username')
+            .sort({ createdAt: -1 })
+            .limit(limit + 1)
+            .exec();
+        } else {
+          messages = await Message.find({
+            $or: [{ toUser: userID }, { fromUser: userID }],
+          })
+            .populate('fromUser', 'id username')
+            .populate('toUser', 'id username')
+            .limit(limit + 1)
+            .sort({ createdAt: -1 })
+            .exec();
+        }
+
+        const hasMoreItems = messages.length + 1 === limit + 1;
+        messages.pop();
+
+        return {
+          messages,
+          hasMoreItems,
+          nextCursor: messages[messages.length - 1].createdAt,
+        };
       } catch (error) {
         console.log(error);
         throw new Error(error);

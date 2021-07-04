@@ -16,9 +16,16 @@ const message = gql`
     latestMessage: Message
   }
 
+  type MessageFeed {
+    messages: [Message!]
+    hasMoreItems: Boolean!
+    nextCursor: String
+  }
+
   extend type Query {
     getMessages(toUserID: String!): [Message!]
     getUserMessages: [UserMessagesResponse!]
+    getUserMessagesFeed(userID: String!, cursorTimestamp: String): MessageFeed!
   }
   extend type Mutation {
     sendMessage(toUserID: String!, content: String!): Message!

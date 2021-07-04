@@ -146,6 +146,63 @@ const Query = {
       throw new Error(error);
     }
   },
+  getFeed: async (_, { projectID, cursorTimestamp }, { req }) => {
+    const user = authenticateHTTP(req);
+    const limit = 10;
+    const errors = {};
+
+    try {
+      const project = await Project.findById(projectID);
+      if (!project) throw new Error("Project doesn't exist");
+
+      await project.populate('members').execPopulate();
+      if (!project.members.find((member) => member.id === user.id)) {
+        errors.notAMember = 'Members only action';
+        throw new AuthenticationError('Action not allowed', { errors });
+      }
+
+      // base case
+      // save me the trouble is there are not posts to fetch
+      if (project.posts.length === 0) {
+        return {
+          posts: [],
+          hasMoreItems: false,
+          nextCursor: null,
+        };
+      }
+
+      let posts = [];
+
+      // just fetch the latest posts if no cursor
+      if (cursorTimestamp === undefined) {
+        posts = await Post.find({
+          project: projectID,
+        })
+          .limit(limit + 1)
+          .sort({ createdAt: -1 });
+      } else {
+        // fetch 11 items, 10 + 1, to verify if there's more to fetch
+        posts = await Post.find(
+          { project: projectID },
+          { createdAt: { $lt: cursorTimestamp } }
+        )
+          .limit(limit + 1)
+          .sort({ createdAt: -1 });
+      }
+
+      const hasMoreItems = posts.length === limit + 1;
+      posts.pop();
+
+      return {
+        posts,
+        hasMoreItems,
+        nextCursor: posts[posts.length - 1].createdAt,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+  },
   getProjectPosts: async (_, { projectID }, { req }) => {
     const user = authenticateHTTP(req);
     const errors = {};
