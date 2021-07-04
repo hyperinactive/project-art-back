@@ -4,7 +4,6 @@ const {
   ApolloError,
   withFilter,
 } = require('apollo-server-express');
-const { ObjectId } = require('mongoose').Types;
 
 const authenticateHTTP = require('../../utils/authenticateHTTP');
 const authenticateSocket = require('../../utils/authenticateSocket');
@@ -35,8 +34,12 @@ const messageResolver = {
         console.log(error);
       }
     },
+    // get the latest messages to "init" the cache on the front end
+    // only to be called on the first load of the inbox component
+    // to view older messages users will user the feed query to fetch them and update the cache
     getUserMessages: async (_, __, { req }) => {
       const user = authenticateHTTP(req);
+      const limit = 30;
 
       try {
         const { friends } = await User.findById(user.id).populate(
@@ -44,49 +47,57 @@ const messageResolver = {
           'id username imageURL'
         );
 
-        // NOTE: to avoid async calls inside loops
-        // make just 2 calls for all messages and users and match them here
-        // using a map to avoid O(n*m) when matching messages with users
-        const mapObj = {};
-        friends.forEach((e) => {
-          // console.log(e.id);
-          mapObj[e.id] = {
-            id: e.id,
-            username: e.username,
-            imageURL: e.imageURL,
-            messages: [],
+        // yes, I'm a mediocre dev at best, okay? At least it works
+        // looping over the friend list twice (type def expects an array but I need user keys) and populate the map with user info
+        // simple push to array doesn't work here cause messages can be received out of fetch order
+        // ugly, but avoids problems with adding messages asynchronously
+        const res = {};
+        Object.entries(friends).forEach((entry) => {
+          res[entry[1].id] = {
+            id: entry[1].id,
+            username: entry[1].username,
+            imageURL: entry[1].imageURL,
           };
         });
 
-        // TODO: async await loop to limit the number of messages sent
-        const userID = ObjectId(user.id);
-        const messages = await Message.find({
-          $or: [{ toUser: userID }, { fromUser: userID }],
-        })
-          // .or([{ 'fromUser.id': userID }, { 'toUser.id': userID }])
-          .populate('toUser', 'id username')
-          .populate('fromUser', 'id username');
-        // .or([{ 'toUser.id': user.id, 'fromUser.id': user.id }]);
-
-        Object.entries(messages).forEach((message) => {
-          // check the correct key in the map
-          const match = message[1].fromUser.id !== user.id ? 'from' : 'to';
-          if (match === 'from') {
-            mapObj[message[1].fromUser.id].messages = [
-              ...mapObj[message[1].fromUser.id].messages,
-              message[1],
-            ];
-          } else {
-            mapObj[message[1].toUser.id].messages = [
-              ...mapObj[message[1].toUser.id].messages,
-              message[1],
-            ];
-          }
+        // fill the messages fields with promises (and latestMessage too)
+        // latestMessages have an extra db query, I know, I know...
+        Object.entries(friends).forEach((entry) => {
+          const pair = [user.id, entry[1].id];
+          res[entry[1].id].messages = new Promise((resolve, reject) => {
+            try {
+              const messages = Message.find({
+                fromUser: { $in: pair },
+                toUser: { $in: pair },
+              })
+                .populate('toUser', 'id username')
+                .populate('fromUser', 'id username')
+                .limit(limit)
+                .sort({ createdAt: -1 });
+              resolve(messages);
+            } catch (error) {
+              console.log(error);
+              reject(error);
+            }
+          });
+          res[entry[1].id].latestMessage = new Promise((resolve, reject) => {
+            try {
+              const latestMessage = Message.findOne({
+                fromUser: { $in: pair },
+                toUser: { $in: pair },
+              })
+                .populate('toUser', 'id username')
+                .populate('fromUser', 'id username');
+              resolve(latestMessage);
+            } catch (error) {
+              console.log(error);
+              reject(error);
+            }
+          });
         });
 
-        // normalize the response
         const normalizedRes = [];
-        Object.entries(mapObj).forEach((entry) => {
+        Object.entries(res).forEach((entry) => {
           normalizedRes.push({
             user: {
               id: entry[1].id,
@@ -94,35 +105,13 @@ const messageResolver = {
               imageURL: entry[1].imageURL,
             },
             messages: entry[1].messages,
-            latestMessage:
-              entry[1].messages[entry[1].messages.length - 1] || null,
+            latestMessage: entry[1].latestMessage,
           });
         });
 
-        // normalizedRes.sort((a, b) => {
-        //   if (
-        //     a.latestMessage &&
-        //     b.latestMessage &&
-        //     a.latestMessage.createdAt &&
-        //     b.latestMessage.createdAt &&
-        //     a.latestMessage.createdAt > b.latestMessage.createdAt
-        //   ) {
-        //     return 1;
-        //   }
-
-        //   if (
-        //     a.latestMessage &&
-        //     !b.latestMessage &&
-        //     a.latestMessage.createdAt &&
-        //     b.latestMessage.createdAt
-        //   )
-        //     return -1;
-        //   return 1;
-        // });
-
         return normalizedRes;
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         throw new Error(error);
       }
     },
