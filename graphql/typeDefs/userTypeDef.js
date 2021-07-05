@@ -36,6 +36,7 @@ const user = gql`
     getUser(userID: ID!): User!
     getUserProjects: [Project!]
     getFriends: [User!]
+    getUserFriends(userID: ID!): [User!]
   }
   extend type Mutation {
     register(registerInput: RegisterInput): User!

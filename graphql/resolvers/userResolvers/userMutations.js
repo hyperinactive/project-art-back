@@ -34,6 +34,7 @@ const generateToken = (user) =>
       email: user.email,
       username: user.username,
       role: user.role,
+      imageURL: user.imageURL,
     },
     process.env.SECRET,
     {

@@ -37,7 +37,24 @@ const Query = {
     const user = authenticateHTTP(req);
 
     try {
-      const fUser = await User.findById(user.id).populate('friends');
+      const fUser = await User.findById(user.id).populate(
+        'friends',
+        'id username imageURL'
+      );
+
+      return fUser.friends;
+    } catch (error) {
+      throw new Error(error);
+    }
+  },
+  getUserFriends: async (_, { userID }, { req }) => {
+    authenticateHTTP(req);
+
+    try {
+      const fUser = await User.findById(userID).populate(
+        'friends',
+        'id username imageURL'
+      );
 
       return fUser.friends;
     } catch (error) {

@@ -150,10 +150,18 @@ const messageResolver = {
         const hasMoreItems = messages.length + 1 === limit + 1;
         messages.pop();
 
+        const nextCursor = new Promise((resolve, reject) => {
+          try {
+            resolve(messages[messages.length - 1].createdAt);
+          } catch (error) {
+            reject(error);
+          }
+        });
+
         return {
           messages,
           hasMoreItems,
-          nextCursor: messages[messages.length - 1].createdAt,
+          nextCursor: nextCursor || null,
         };
       } catch (error) {
         console.log(error);
