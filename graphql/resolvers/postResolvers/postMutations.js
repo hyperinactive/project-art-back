@@ -1,6 +1,7 @@
 const {
   AuthenticationError,
   UserInputError,
+  ApolloError,
 } = require('apollo-server-express');
 const uuid = require('uuid');
 
@@ -52,7 +53,7 @@ const Mutation = {
 
       return res;
     } catch (error) {
-      throw new Error(error, { errors });
+      throw new ApolloError(error, { errors });
     }
   },
   deletePost: async (_, { postID }, { req }) => {
@@ -71,7 +72,7 @@ const Mutation = {
       }
       throw new AuthenticationError('Not allowed');
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
   likeTogglePost: async (_, { postID }, { req }) => {

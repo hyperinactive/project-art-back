@@ -1,6 +1,7 @@
 const {
   UserInputError,
   AuthenticationError,
+  ApolloError,
 } = require('apollo-server-express');
 
 const authenticateHTTP = require('../../../utils/authenticateHTTP');
@@ -30,7 +31,7 @@ const Query = {
       await user.populate('friends', 'id username').execPopulate();
       return user;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
   getFriends: async (_, __, { req }) => {
@@ -44,7 +45,7 @@ const Query = {
 
       return fUser.friends;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
   getUserFriends: async (_, { userID }, { req }) => {
@@ -58,7 +59,7 @@ const Query = {
 
       return fUser.friends;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError(error);
     }
   },
 };

@@ -164,8 +164,7 @@ const messageResolver = {
           nextCursor: nextCursor || null,
         };
       } catch (error) {
-        console.log(error);
-        throw new Error(error);
+        throw new ApolloError('InternalError', { error });
       }
     },
   },
@@ -220,8 +219,7 @@ const messageResolver = {
 
         return message;
       } catch (err) {
-        // some other internal error idk
-        console.log(err);
+        throw new ApolloError('InternalError', { err });
       }
     },
   },

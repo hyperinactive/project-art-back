@@ -1,14 +1,14 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-const { UserInputError } = require('apollo-server-express');
+const { UserInputError, ApolloError } = require('apollo-server-express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const uuid = require('uuid');
+
 const {
   validateRegisterInput,
   validateLoginInput,
 } = require('../../../utils/validators');
-
 const User = require('../../../models/User');
 const authenticateHTTP = require('../../../utils/authenticateHTTP');
 const { uploadFile, deleteFile } = require('../../../utils/storage');
@@ -171,7 +171,7 @@ const Mutation = {
         // url = `http://localhost:4000/${key}`;
         url = `${key}`;
       } catch (error) {
-        throw new Error('Error uploading the file', error);
+        throw new ApolloError('Error uploading the file', error);
       }
     }
 
@@ -247,7 +247,7 @@ const Mutation = {
 
       return receiver;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
 };

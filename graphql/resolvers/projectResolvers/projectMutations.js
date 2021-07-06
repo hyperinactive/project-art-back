@@ -39,8 +39,8 @@ const Mutation = {
       await group.save();
       await fUser.save();
       return await group.populate('owner').populate('members').execPopulate();
-    } catch {
-      throw new ApolloError('Uh oh', 'BAD_USER_INPUT', { errors });
+    } catch (error) {
+      throw new ApolloError('InternalError', { error });
     }
   },
   addMember: async (_, { projectID }, { req }) => {
@@ -68,7 +68,7 @@ const Mutation = {
         return fUser;
       }
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
   // for simplicity update functions will be split
@@ -118,7 +118,7 @@ const Mutation = {
       const res = await project.populate('members').execPopulate();
       return res;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
 };

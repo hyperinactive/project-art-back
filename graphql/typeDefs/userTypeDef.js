@@ -34,7 +34,6 @@ const user = gql`
   extend type Query {
     getUsers: [User!]
     getUser(userID: ID!): User!
-    getUserProjects: [Project!]
     getFriends: [User!]
     getUserFriends(userID: ID!): [User!]
   }

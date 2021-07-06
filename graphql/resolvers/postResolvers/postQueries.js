@@ -1,6 +1,7 @@
 const {
   AuthenticationError,
   UserInputError,
+  ApolloError,
 } = require('apollo-server-express');
 const Post = require('../../../models/Post');
 const Project = require('../../../models/Project');
@@ -64,7 +65,7 @@ const Query = {
         hasMoreItems: itemCount >= skipDefault + limit,
       };
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
   getPostsFeed: async (_, { projectID, cursor, skip = 10 }, { req }) => {
@@ -143,7 +144,7 @@ const Query = {
 
       return returnObj;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
   getFeed: async (_, { projectID, cursorTimestamp }, { req }) => {
@@ -200,7 +201,7 @@ const Query = {
       };
     } catch (error) {
       console.log(error);
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
   getProjectPosts: async (_, { projectID }, { req }) => {
@@ -227,7 +228,7 @@ const Query = {
 
       return project.posts;
     } catch (error) {
-      throw new Error('Error', error);
+      throw new ApolloError('InternalError', { error });
     }
   },
 };
