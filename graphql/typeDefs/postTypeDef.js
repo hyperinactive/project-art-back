@@ -17,10 +17,6 @@ const post = gql`
     commentCount: Int!
     likeCount: Int!
   }
-  type PostsChunkResponse {
-    posts: [Post!]
-    hasMoreItems: Boolean!
-  }
   type PostsCursorResponse {
     posts: [Post!]
     nextCursor: ID
@@ -43,19 +39,17 @@ const post = gql`
   extend type Query {
     getPosts: [Post!]
     getPost(postID: ID!): Post! # takes in an argument of post id
-    getPostsChunk(skip: Int, limit: Int!): PostsChunkResponse!
     getProjectPosts(projectID: ID!): [Post!]
     getPostsFeed(projectID: ID!, cursor: ID, skip: Int): PostsCursorResponse!
-    getFeed(projectID: ID!, cursorTimestamp: String): PostFeed!
+    getFeed(projectID: ID!, cursor: String): PostFeed!
   }
   extend type Mutation {
-    createPost(body: String!): Post! # takes in data required to make a post
     deletePost(postID: ID!): Post! # takes id returns a confirmation message
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
     createProjectPost(projectID: ID!, body: String!, image: Upload): Post!
-
-    # upload testing
-    uploadFile(file: Upload!): File!
+  }
+  extend type Subscription {
+    newPost: Post!
   }
 `;
 

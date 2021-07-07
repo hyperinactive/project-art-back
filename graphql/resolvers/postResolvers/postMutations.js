@@ -8,54 +8,10 @@ const uuid = require('uuid');
 const Post = require('../../../models/Post');
 const Project = require('../../../models/Project');
 const authenticateHTTP = require('../../../utils/authenticateHTTP');
-const { validatePostInput } = require('../../../utils/validators');
 const { uploadFile } = require('../../../utils/storage');
 const allowedImageTypes = require('../../../utils/types');
 
 const Mutation = {
-  // testing upload
-  uploadFile: async (_, { file }) => {
-    if (!file) throw new UserInputError('File is empty');
-
-    // destructuring the file, but since it is a promise we need the await keyword
-    // const { createReadStream, filename, mimetype, encoding } = await file;
-    const { createReadStream, filename } = await file;
-    const key = `${uuid.v4()}${filename}`;
-
-    try {
-      await uploadFile(createReadStream, key);
-    } catch (error) {
-      throw new Error('Error uploading the file', error);
-    }
-    return {
-      url: `http://localhost:3000/files/${key}`,
-    };
-  },
-
-  // we're using the contex here, it contains the request object
-  createPost: async (_, { projectID, body }, { req }) => {
-    const user = authenticateHTTP(req);
-    const { valid, errors } = validatePostInput(body);
-
-    if (!valid) {
-      throw new UserInputError('Errors', { errors });
-    }
-    try {
-      const newPost = new Post({
-        body,
-        user: user.id, // since the token only has id, we can't pass the user object without querying for it
-        username: user.username,
-        createdAt: new Date().toISOString(),
-        project: projectID,
-      });
-
-      const res = await newPost.save();
-
-      return res;
-    } catch (error) {
-      throw new ApolloError(error, { errors });
-    }
-  },
   deletePost: async (_, { postID }, { req }) => {
     const user = authenticateHTTP(req);
     try {
@@ -100,7 +56,7 @@ const Mutation = {
   },
   // TODO: to be the default way of posting stuff
   // as to not break the current app, it remains separate
-  createProjectPost: async (_, { projectID, body, image }, { req }) => {
+  createProjectPost: async (_, { projectID, body, image }, { req, pubsub }) => {
     const errors = {};
     const user = authenticateHTTP(req);
     const project = await Project.findById(projectID).populate('members');
@@ -154,6 +110,9 @@ const Mutation = {
     project.posts.push(res);
     await project.save();
     await res.populate('user').execPopulate();
+
+    pubsub.publish('NEW_POST', { newPost });
+
     return res;
   },
 };

@@ -21,7 +21,9 @@ const Query = {
       throw new Error(error);
     }
   },
-  getPost: async (_, { postID }) => {
+  getPost: async (_, { postID }, { req }) => {
+    authenticateHTTP(req);
+
     try {
       const post = await Post.findById(postID)
         .populate('comments')
@@ -44,28 +46,6 @@ const Query = {
       throw new Error('Post not found');
     } catch (error) {
       throw new Error(error);
-    }
-  },
-  getPostsChunk: async (_, { limit, skip }) => {
-    const skipDefault = skip === undefined ? 0 : skip;
-    try {
-      const itemCount = await Post.find({}).countDocuments();
-
-      const posts = await Post.find({})
-        .skip(skipDefault)
-        .limit(limit)
-        .populate('comments')
-        .populate('user')
-        .sort({ createdAt: -1 })
-        .exec();
-
-      // if there is no more to fetch additional field
-      return {
-        posts,
-        hasMoreItems: itemCount >= skipDefault + limit,
-      };
-    } catch (error) {
-      throw new ApolloError('InternalError', { error });
     }
   },
   getPostsFeed: async (_, { projectID, cursor, skip = 10 }, { req }) => {
@@ -147,7 +127,7 @@ const Query = {
       throw new ApolloError('InternalError', { error });
     }
   },
-  getFeed: async (_, { projectID, cursorTimestamp }, { req }) => {
+  getFeed: async (_, { projectID, cursor }, { req }) => {
     const user = authenticateHTTP(req);
     const limit = 10;
     const errors = {};
@@ -175,20 +155,24 @@ const Query = {
       let posts = [];
 
       // just fetch the latest posts if no cursor
-      if (cursorTimestamp === undefined) {
+      if (cursor === undefined || cursor == null) {
         posts = await Post.find({
           project: projectID,
         })
           .limit(limit + 1)
-          .sort({ createdAt: -1 });
+          .sort({ createdAt: -1 })
+          .populate('user', 'id username imageURL status')
+          .exec();
       } else {
         // fetch 11 items, 10 + 1, to verify if there's more to fetch
-        posts = await Post.find(
-          { project: projectID },
-          { createdAt: { $lt: cursorTimestamp } }
-        )
+        posts = await Post.find({
+          project: projectID,
+          createdAt: { $lt: cursor },
+        })
           .limit(limit + 1)
-          .sort({ createdAt: -1 });
+          .sort({ createdAt: -1 })
+          .populate('user', 'id username imageURL status')
+          .exec();
       }
 
       const hasMoreItems = posts.length === limit + 1;

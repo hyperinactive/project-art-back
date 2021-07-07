@@ -147,7 +147,7 @@ const messageResolver = {
             .exec();
         }
 
-        const hasMoreItems = messages.length + 1 === limit + 1;
+        const hasMoreItems = messages.length === limit + 1;
         messages.pop();
 
         const nextCursor = new Promise((resolve, reject) => {
@@ -223,6 +223,8 @@ const messageResolver = {
       }
     },
   },
+  // TODO: Cannot have more than one Subscription field??? WTF APOLLO
+  // read up on this and structire the code later
   Subscription: {
     newMessage: {
       // asyncIterator expects an array of event
@@ -241,6 +243,31 @@ const messageResolver = {
             return true;
           }
           return false;
+        }
+      ),
+    },
+    newPost: {
+      subscribe: withFilter(
+        (_, __, { pubsub, connection }) => {
+          authenticateSocket(connection);
+          return pubsub.asyncIterator(['NEW_POST']);
+        },
+        async ({ newPost }, __, { connection }) => {
+          const user = authenticateSocket(connection);
+          try {
+            const fUser = await User.findById(user.id);
+            if (!fUser) throw new UserInputError('Wrong user ID');
+
+            for (let i = 0; i < fUser.projects.length; i++) {
+              if (fUser.projects[i].toString() === newPost.project.toString()) {
+                return true;
+              }
+            }
+
+            return false;
+          } catch (error) {
+            throw new ApolloError(error);
+          }
         }
       ),
     },
