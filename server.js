@@ -14,48 +14,12 @@ const typeDefs = require('./graphql/typeDefs');
 // const pubSub = new PubSub();
 // ------------------------------------------------------
 
-<<<<<<< HEAD
-// feed the server with typeDefs and resolvers
-// authentication can be done via express middlewares
-// donwside of that approach is that it will run on all request
-// so we're gonna use the apollo context
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  // context: ({ req }) => ({ req, pubSub }), // we're destructuring the req and passing it into the context
-  context: ({ req }) => ({ req }),
-  // subscriptions: {
-  //   path: '/subscriptions',
-  // },
-});
-
-const port = process.env.PORT || 4000;
-server.applyMiddleware({ app });
-
-// upon connecting to the db start the server
-mongoose
-  .connect(process.env.DB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-  })
-  .then(() => {
-    console.log('DB Connected');
-    return app.listen(port);
-  })
-  .then(() => {
-    console.log(`We live now boys at ${port}`);
-  })
-  .catch((error) => {
-    console.log(error);
-=======
 const startApolloServer = async () => {
   const pubsub = new PubSub();
   const server = new ApolloServer({
     typeDefs,
     resolvers,
     context: ({ req, connection }) => ({ req, pubsub, connection }),
->>>>>>> master
   });
 
   const httpServer = http.createServer(app);
