@@ -9,8 +9,16 @@ app.use(
   express.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 })
 );
 app.use(cors());
-app.use((req, res) => {
+
+app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'x-www-form-urlencoded, Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  next();
 });
 
 // a neccessary evil, not all can go though graphql
