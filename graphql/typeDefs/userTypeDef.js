@@ -16,6 +16,7 @@ const user = gql`
     role: String!
     imageURL: String
   }
+
   input RegisterInput {
     username: String!
     password: String!

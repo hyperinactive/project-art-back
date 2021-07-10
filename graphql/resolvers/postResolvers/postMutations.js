@@ -109,7 +109,7 @@ const Mutation = {
     const res = await newPost.save();
     project.posts.push(res);
     await project.save();
-    await res.populate('user').execPopulate();
+    await res.populate('user', 'id username imageURL status').execPopulate();
 
     pubsub.publish('NEW_POST', { newPost });
 

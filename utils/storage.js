@@ -43,6 +43,25 @@ const uploadFile = async (createReadStream, key) => {
   });
 };
 
+const uploadBase64 = async (stream, key) => {
+  const uploadParams = {
+    Bucket: bucketName,
+    Body: stream,
+    Key: key,
+  };
+
+  return new Promise((resolve, reject) => {
+    s3.upload(uploadParams, (err, data) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+};
+
 const getFileStream = async (key, res) => {
   const downloadParams = {
     Bucket: bucketName,
@@ -85,4 +104,4 @@ const deleteFile = async (key) =>
     );
   });
 
-module.exports = { uploadFile, getFileStream, deleteFile };
+module.exports = { uploadFile, getFileStream, deleteFile, uploadBase64 };

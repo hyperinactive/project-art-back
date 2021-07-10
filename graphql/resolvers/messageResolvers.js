@@ -150,18 +150,13 @@ const messageResolver = {
         const hasMoreItems = messages.length === limit + 1;
         messages.pop();
 
-        const nextCursor = new Promise((resolve, reject) => {
-          try {
-            resolve(messages[messages.length - 1].createdAt);
-          } catch (error) {
-            reject(error);
-          }
-        });
-
         return {
           messages,
           hasMoreItems,
-          nextCursor: nextCursor || null,
+          nextCursor:
+            messages[messages.length - 1] > 0
+              ? messages[messages.length - 1].createdAt
+              : null,
         };
       } catch (error) {
         throw new ApolloError('InternalError', { error });

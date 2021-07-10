@@ -40,10 +40,11 @@ const Query = {
         })
         .exec();
 
-      if (post) {
-        return post;
+      if (!post) {
+        throw new Error('Post not found');
       }
-      throw new Error('Post not found');
+
+      return post;
     } catch (error) {
       throw new Error(error);
     }
@@ -177,11 +178,12 @@ const Query = {
 
       const hasMoreItems = posts.length === limit + 1;
       posts.pop();
+      const nextCursor = posts.slice(-1)[0].createdAt || null;
 
       return {
         posts,
         hasMoreItems,
-        nextCursor: posts[posts.length - 1].createdAt,
+        nextCursor,
       };
     } catch (error) {
       console.log(error);
