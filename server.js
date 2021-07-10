@@ -41,7 +41,7 @@ const startApolloServer = async () => {
   }
 
   try {
-    await mongoose.connect(process.env.DB_URI_DEV, {
+    await mongoose.connect(process.env.DB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
