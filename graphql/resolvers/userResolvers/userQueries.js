@@ -1,14 +1,15 @@
 const {
   UserInputError,
   AuthenticationError,
+  ApolloError,
 } = require('apollo-server-express');
 
-const checkAuth = require('../../../utils/checkAuth');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
 const User = require('../../../models/User');
 
 const Query = {
-  getUsers: async (_, __, context) => {
-    checkAuth(context);
+  getUsers: async (_, __, { req }) => {
+    authenticateHTTP(req);
     let users = null;
     try {
       users = await User.find({});
@@ -30,18 +31,35 @@ const Query = {
       await user.populate('friends', 'id username').execPopulate();
       return user;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
-  getFriends: async (_, __, context) => {
-    const user = checkAuth(context);
+  getFriends: async (_, __, { req }) => {
+    const user = authenticateHTTP(req);
 
     try {
-      const fUser = await User.findById(user.id).populate('friends');
+      const fUser = await User.findById(user.id).populate(
+        'friends',
+        'id username imageURL'
+      );
 
       return fUser.friends;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
+    }
+  },
+  getUserFriends: async (_, { userID }, { req }) => {
+    authenticateHTTP(req);
+
+    try {
+      const fUser = await User.findById(userID).populate(
+        'friends',
+        'id username imageURL'
+      );
+
+      return fUser.friends;
+    } catch (error) {
+      throw new ApolloError(error);
     }
   },
 };

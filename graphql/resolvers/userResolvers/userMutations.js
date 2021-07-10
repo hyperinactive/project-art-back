@@ -1,18 +1,23 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-const { UserInputError } = require('apollo-server-express');
+const { UserInputError, ApolloError } = require('apollo-server-express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const uuid = require('uuid');
+const stream = require('stream');
+
 const {
   validateRegisterInput,
   validateLoginInput,
 } = require('../../../utils/validators');
-
 const User = require('../../../models/User');
-const checkAuth = require('../../../utils/checkAuth');
-const { uploadFile, deleteFile } = require('../../../utils/storage');
-const allowedImageTypes = require('../../../utils/types');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
+const {
+  // uploadFile,
+  deleteFile,
+  uploadBase64,
+} = require('../../../utils/storage');
+// const allowedImageTypes = require('../../../utils/types');
 
 // username and email validation
 const checkForExistingUsernme = async (username) => {
@@ -34,6 +39,7 @@ const generateToken = (user) =>
       email: user.email,
       username: user.username,
       role: user.role,
+      imageURL: user.imageURL,
     },
     process.env.SECRET,
     {
@@ -134,8 +140,8 @@ const Mutation = {
       token,
     };
   },
-  updateUser: async (_, { username, status, skills, image }, context) => {
-    const user = checkAuth(context);
+  updateUser: async (_, { username, status, skills, image }, { req }) => {
+    const user = authenticateHTTP(req);
     const fUser = await User.findById(user.id);
     const errors = {};
 
@@ -150,27 +156,34 @@ const Mutation = {
 
     let url = fUser.imageURL;
     if (image) {
+      const cleanBuffer = image.replace('data:image/png;base64,', '');
+      // const imgBuffer = Buffer.from(base64, 'base64');
+      const imgBuffer = Buffer.from(cleanBuffer, 'base64');
+      const imageStream = new stream.Readable();
+      imageStream.push(imgBuffer);
+      imageStream.push(null);
+
       // if the user already have an avatar, delete it form the storage
       if (fUser.imageURL) {
         await deleteFile(fUser.imageURL);
       }
 
-      const { createReadStream, mimetype } = await image;
+      // const { createReadStream, mimetype } = await image;
 
-      if (!Object.values(allowedImageTypes).find((type) => type === mimetype)) {
-        errors.allowedType = 'File type not allowed';
-        throw new UserInputError('File type not allowed', { errors });
-      }
+      // if (!Object.values(allowedImageTypes).find((type) => type === mimetype)) {
+      //   errors.allowedType = 'File type not allowed';
+      //   throw new UserInputError('File type not allowed', { errors });
+      // }
 
-      const key = `${uuid.v4()}.${mimetype.split('/')[1]}`;
+      const key = `${uuid.v4()}.png}`;
       try {
-        await uploadFile(createReadStream, key)
+        await uploadBase64(imageStream, key)
           .then((data) => console.log(data))
           .catch((err) => console.log(err));
         // url = `http://localhost:4000/${key}`;
         url = `${key}`;
       } catch (error) {
-        throw new Error('Error uploading the file', error);
+        throw new ApolloError('Error uploading the file', error);
       }
     }
 
@@ -194,9 +207,9 @@ const Mutation = {
     // const update = { username, skills, status, imageURL: url };
     // await fUser.updateOne(update);
 
-    fUser.username = username;
-    fUser.skills = skills;
-    fUser.status = status;
+    fUser.username = username.trim();
+    fUser.skills = skills.trim();
+    fUser.status = status.trim();
     fUser.imageURL = url;
 
     await fUser.save();
@@ -210,8 +223,8 @@ const Mutation = {
     };
   },
   // TODO: obviously we need to accept or decline these, placeholder code, LUL
-  addFriend: async (_, { userID, username }, context) => {
-    const user = checkAuth(context);
+  addFriend: async (_, { userID, username }, { req }) => {
+    const user = authenticateHTTP(req);
 
     if (userID === undefined && username === undefined) {
       throw new Error('No data provided');
@@ -246,7 +259,7 @@ const Mutation = {
 
       return receiver;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
 };

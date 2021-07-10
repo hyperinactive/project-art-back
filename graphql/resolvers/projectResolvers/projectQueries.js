@@ -1,8 +1,8 @@
-const { UserInputError } = require('apollo-server-express');
+const { UserInputError, ApolloError } = require('apollo-server-express');
 
 const Project = require('../../../models/Project');
 const User = require('../../../models/User');
-const checkAuth = require('../../../utils/checkAuth');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
 
 const Query = {
   getProjects: async () => {
@@ -12,7 +12,7 @@ const Query = {
         .populate('members');
       return groups;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
   // to be call when an overview of the project is needed
@@ -29,10 +29,11 @@ const Query = {
         .populate('members', 'id')
         .execPopulate();
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
-  getProjectMembers: async (_, { projectID }) => {
+  getProjectMembers: async (_, { projectID }, { req }) => {
+    authenticateHTTP(req);
     try {
       // const user = checkAuth(context);
       const project = await Project.findById(projectID);
@@ -49,19 +50,19 @@ const Query = {
 
       return project.members;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
-  getUserProjects: async (_, __, context) => {
-    const user = checkAuth(context);
-
+  getUserProjects: async (_, { userID }, { req }) => {
+    const user = authenticateHTTP(req);
+    const searchID = userID === undefined ? user.id : userID;
     try {
-      const fUser = await User.findById(user.id);
+      const fUser = await User.findById(searchID);
 
       await fUser.populate('owner').populate('projects').execPopulate();
       return fUser.projects;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
 };

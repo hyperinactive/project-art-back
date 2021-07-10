@@ -5,7 +5,8 @@ const user = require('./userTypeDef');
 const post = require('./postTypeDef');
 const comment = require('./commentTypeDef');
 const project = require('./projectTypeDef');
+const message = require('./messageTypeDefs');
 
-const shemaArray = [root, user, post, comment, project];
+const shemaArray = [root, user, post, comment, project, message];
 
 module.exports = shemaArray;

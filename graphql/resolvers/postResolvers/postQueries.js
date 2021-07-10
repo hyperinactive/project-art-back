@@ -1,10 +1,11 @@
 const {
   AuthenticationError,
   UserInputError,
+  ApolloError,
 } = require('apollo-server-express');
 const Post = require('../../../models/Post');
 const Project = require('../../../models/Project');
-const checkAuth = require('../../../utils/checkAuth');
+const authenticateHTTP = require('../../../utils/authenticateHTTP');
 
 const Query = {
   getPosts: async () => {
@@ -20,7 +21,9 @@ const Query = {
       throw new Error(error);
     }
   },
-  getPost: async (_, { postID }) => {
+  getPost: async (_, { postID }, { req }) => {
+    authenticateHTTP(req);
+
     try {
       const post = await Post.findById(postID)
         .populate('comments')
@@ -37,38 +40,17 @@ const Query = {
         })
         .exec();
 
-      if (post) {
-        return post;
+      if (!post) {
+        throw new Error('Post not found');
       }
-      throw new Error('Post not found');
+
+      return post;
     } catch (error) {
       throw new Error(error);
     }
   },
-  getPostsChunk: async (_, { limit, skip }) => {
-    const skipDefault = skip === undefined ? 0 : skip;
-    try {
-      const itemCount = await Post.find({}).countDocuments();
-
-      const posts = await Post.find({})
-        .skip(skipDefault)
-        .limit(limit)
-        .populate('comments')
-        .populate('user')
-        .sort({ createdAt: -1 })
-        .exec();
-
-      // if there is no more to fetch additional field
-      return {
-        posts,
-        hasMoreItems: itemCount >= skipDefault + limit,
-      };
-    } catch (error) {
-      throw new Error(error);
-    }
-  },
-  getPostsFeed: async (_, { projectID, cursor, skip = 10 }, context) => {
-    const user = checkAuth(context);
+  getPostsFeed: async (_, { projectID, cursor, skip = 10 }, { req }) => {
+    const user = authenticateHTTP(req);
     const errors = {};
 
     try {
@@ -143,11 +125,73 @@ const Query = {
 
       return returnObj;
     } catch (error) {
-      throw new Error(error);
+      throw new ApolloError('InternalError', { error });
     }
   },
-  getProjectPosts: async (_, { projectID }, context) => {
-    const user = checkAuth(context);
+  getFeed: async (_, { projectID, cursor }, { req }) => {
+    const user = authenticateHTTP(req);
+    const limit = 10;
+    const errors = {};
+
+    try {
+      const project = await Project.findById(projectID);
+      if (!project) throw new Error("Project doesn't exist");
+
+      await project.populate('members').execPopulate();
+      if (!project.members.find((member) => member.id === user.id)) {
+        errors.notAMember = 'Members only action';
+        throw new AuthenticationError('Action not allowed', { errors });
+      }
+
+      // base case
+      // save me the trouble is there are not posts to fetch
+      if (project.posts.length === 0) {
+        return {
+          posts: [],
+          hasMoreItems: false,
+          nextCursor: null,
+        };
+      }
+
+      let posts = [];
+
+      // just fetch the latest posts if no cursor
+      if (cursor === undefined || cursor == null) {
+        posts = await Post.find({
+          project: projectID,
+        })
+          .limit(limit + 1)
+          .sort({ createdAt: -1 })
+          .populate('user', 'id username imageURL status')
+          .exec();
+      } else {
+        // fetch 11 items, 10 + 1, to verify if there's more to fetch
+        posts = await Post.find({
+          project: projectID,
+          createdAt: { $lt: cursor },
+        })
+          .limit(limit + 1)
+          .sort({ createdAt: -1 })
+          .populate('user', 'id username imageURL status')
+          .exec();
+      }
+
+      const hasMoreItems = posts.length === limit + 1;
+      posts.pop();
+      const nextCursor = posts.slice(-1)[0].createdAt || null;
+
+      return {
+        posts,
+        hasMoreItems,
+        nextCursor,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new ApolloError('InternalError', { error });
+    }
+  },
+  getProjectPosts: async (_, { projectID }, { req }) => {
+    const user = authenticateHTTP(req);
     const errors = {};
     try {
       const project = await Project.findById(projectID);
@@ -170,7 +214,7 @@ const Query = {
 
       return project.posts;
     } catch (error) {
-      throw new Error('Error', error);
+      throw new ApolloError('InternalError', { error });
     }
   },
 };
