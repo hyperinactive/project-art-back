@@ -257,8 +257,12 @@ const Mutation = {
       await receiver.save();
       await sender.save();
 
-      return receiver;
+      return {
+        sender,
+        receiver,
+      };
     } catch (error) {
+      console.log(error);
       throw new ApolloError('InternalError', { error });
     }
   },
