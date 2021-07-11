@@ -16,6 +16,10 @@ const user = gql`
     role: String!
     imageURL: String
   }
+  type ADD_FRIEND {
+    sender: User!
+    receiver: User!
+  }
 
   input RegisterInput {
     username: String!
@@ -47,7 +51,7 @@ const user = gql`
       skills: String!
       image: Upload
     ): User!
-    addFriend(username: String, userID: ID): User!
+    addFriend(username: String, userID: ID): ADD_FRIEND!
   }
 `;
 
