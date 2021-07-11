@@ -32,7 +32,7 @@ const startApolloServer = async () => {
   // await new Promise((resolve, reject) => httpServer.listen({ port }, resolve));
 
   try {
-    httpServer.listen(PORT);
+    httpServer.listen(process.env.PORT || PORT);
     console.log(`server ==> Look alive boys`);
   } catch (error) {
     console.log('Apollo server error');

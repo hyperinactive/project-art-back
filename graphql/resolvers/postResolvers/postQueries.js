@@ -178,7 +178,11 @@ const Query = {
 
       const hasMoreItems = posts.length === limit + 1;
       posts.pop();
-      const nextCursor = posts.slice(-1)[0].createdAt || null;
+
+      let nextCursor = null;
+      if (posts.length > 0) {
+        nextCursor = posts.slice(-1)[0].createdAt;
+      }
 
       return {
         posts,
