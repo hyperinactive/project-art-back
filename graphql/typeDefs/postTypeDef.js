@@ -47,6 +47,7 @@ const post = gql`
     deletePost(postID: ID!): Post! # takes id returns a confirmation message
     likeTogglePost(postID: ID!): Post! # will work as a toggle, no need for an "unlike" mutation
     createProjectPost(projectID: ID!, body: String!, image: Upload): Post!
+    editPost(postID: ID!, body: String!): Post!
   }
   extend type Subscription {
     newPost: Post!

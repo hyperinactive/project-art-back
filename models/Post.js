@@ -7,6 +7,7 @@ const postSchema = new Schema({
   // NOTE: potentially a separate model?
   // TODO: set up a default image path
   imageURL: String,
+  editedAt: String,
   comments: [
     {
       type: Schema.Types.ObjectId,

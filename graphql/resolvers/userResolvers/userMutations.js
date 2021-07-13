@@ -154,6 +154,26 @@ const Mutation = {
       checkForExistingUsernme(username);
     }
 
+    // TODO: need a better way of validating
+    if (username.trim() === '') errors.username = 'Username empty';
+
+    if (username.length > 15)
+      errors.usernameLength = 'Username cannot be longer than 15 characters';
+
+    if (status.trim() === '') status = 'lurk, lurk';
+    if (status.length > 25)
+      errors.statusLength = 'Status cannot be longer than 25 characters';
+
+    if (skills.trim() === '') skills = 'very skilled YEP';
+    if (skills.length > 30)
+      errors.skillsLength = 'Skills cannot be longer than 30 characters';
+
+    if (Object.keys(errors).length > 0)
+      throw new UserInputError('InvalidInput', { errors });
+
+    // const update = { username, skills, status, imageURL: url };
+    // await fUser.updateOne(update);
+
     let url = fUser.imageURL;
     if (image) {
       const cleanBuffer = image.replace('data:image/png;base64,', '');
@@ -175,7 +195,7 @@ const Mutation = {
       //   throw new UserInputError('File type not allowed', { errors });
       // }
 
-      const key = `${uuid.v4()}.png}`;
+      const key = `${uuid.v4()}.png`;
       try {
         await uploadBase64(imageStream, key)
           .then((data) => console.log(data))
@@ -186,26 +206,6 @@ const Mutation = {
         throw new ApolloError('Error uploading the file', error);
       }
     }
-
-    // TODO: need a better way of validating
-    if (username.trim() === '') errors.username = 'Username empty';
-
-    if (username.length > 15)
-      errors.usernameLength = 'Username cannot be longer than 15 characters';
-
-    if (status.trim() === '') status = 'lurk, lurk';
-    if (status.length > 25)
-      errors.statusLength = 'Status cannot be longer than 25 characters';
-
-    if (skills.trim() === '') skills = 'very skilled YEP';
-    if (skills.length > 30)
-      errors.skillsLength = 'Skills cannot be longer than 30 characters';
-
-    if (Object.keys(errors).length > 0)
-      throw new UserInputError('InvalidInput', { errors });
-
-    // const update = { username, skills, status, imageURL: url };
-    // await fUser.updateOne(update);
 
     fUser.username = username.trim();
     fUser.skills = skills.trim();

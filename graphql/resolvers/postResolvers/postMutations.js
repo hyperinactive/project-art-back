@@ -104,6 +104,7 @@ const Mutation = {
       username: user.username,
       createdAt: new Date().toISOString(),
       imageURL,
+      editedAt: '',
     });
 
     const res = await newPost.save();
@@ -114,6 +115,37 @@ const Mutation = {
     pubsub.publish('NEW_POST', { newPost });
 
     return res;
+  },
+  // TODO: image edit
+  editPost: async (_, { postID, body }, { req }) => {
+    const user = authenticateHTTP(req);
+    const errors = {};
+    // TODO: resolve on client side
+    if (body.trim() === '') {
+      errors.body = 'Empty body';
+      throw new UserInputError('User Input error', { errors });
+    }
+
+    let post = null;
+    try {
+      post = await Post.findById(postID);
+
+      if (!post) {
+        throw new UserInputError('Nonexistent post');
+      }
+
+      if (post.user.toString() !== user.id.toString()) {
+        throw new UserInputError('Action not allowed');
+      }
+      post.editedAt = new Date().toISOString();
+      post.body = body;
+
+      await post.save();
+
+      return post;
+    } catch (error) {
+      throw new ApolloError(error);
+    }
   },
 };
 
