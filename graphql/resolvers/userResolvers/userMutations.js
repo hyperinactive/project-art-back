@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const uuid = require('uuid');
 const stream = require('stream');
+const sgMail = require('@sendgrid/mail');
 
 const {
   validateRegisterInput,
@@ -17,6 +18,7 @@ const {
   deleteFile,
   uploadBase64,
 } = require('../../../utils/storage');
+const generateTemplate = require('../../../utils/emailTemplate');
 // const allowedImageTypes = require('../../../utils/types');
 
 // username and email validation
@@ -37,13 +39,14 @@ const generateToken = (user) =>
     {
       id: user.id,
       email: user.email,
+      emailVerified: user.emailVerified,
       username: user.username,
       role: user.role,
       imageURL: user.imageURL,
     },
     process.env.SECRET,
     {
-      expiresIn: '45min',
+      expiresIn: '1h',
     }
   );
 
@@ -94,6 +97,46 @@ const Mutation = {
 
     // result of registering a new user
     const res = await newUser.save();
+    // -----------------------------------------------------------------
+    sgMail.setApiKey(process.env.SG_KEY);
+    const mail = {
+      to: email,
+      from: process.env.SG_SENDER,
+      subject: 'ProjectArt - Email verification',
+      html: generateTemplate(username, res._id),
+    };
+
+    sgMail
+      .send(mail)
+      .then(() => {
+        console.log('Email sent');
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // const transport = createTransport({
+    //   service: 'gmail',
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS,
+    //   },
+    // });
+
+    // const mail = {
+    //   from: 'ProjectArt',
+    //   to: email,
+    //   subject: 'ProjectArt',
+    //   html: generateTemplate(username, res._id),
+    //   // text: 'will you really reject this google?',
+    // };
+
+    // // eslint-disable-next-line no-unused-vars
+    // transport.sendMail(mail, (error) => {
+    //   if (error) {
+    //     console.log(error);
+    //   }
+    // });
 
     // make a token
     // perhaps only have id in the payload?
@@ -265,6 +308,23 @@ const Mutation = {
       console.log(error);
       throw new ApolloError('InternalError', { error });
     }
+  },
+  verifyUser: async (_, __, { req }) => {
+    const user = authenticateHTTP(req);
+
+    const fUser = await User.findById(user.id);
+
+    if (!fUser) throw new UserInputError('Nonexistent user');
+
+    fUser.emailVerified = true;
+
+    await fUser.save();
+    const token = generateToken(fUser);
+    return {
+      ...fUser._doc,
+      id: fUser._id,
+      token,
+    };
   },
 };
 

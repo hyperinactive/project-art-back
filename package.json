@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^7.4.5",
     "apollo-server-express": "^2.22.2",
     "aws-sdk": "^2.876.0",
     "bcrypt": "^5.0.1",

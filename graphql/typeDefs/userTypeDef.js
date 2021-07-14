@@ -52,6 +52,7 @@ const user = gql`
       image: Upload
     ): User!
     addFriend(username: String, userID: ID): ADD_FRIEND!
+    verifyUser: User!
   }
 `;
 

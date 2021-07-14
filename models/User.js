@@ -13,8 +13,6 @@ const userSchema = new Schema({
     unique: true,
   },
   password: String,
-
-  // TODO: for email identification, hopefully soon
   emailVerified: {
     type: Boolean,
     defautl: false,
