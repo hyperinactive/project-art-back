@@ -33,7 +33,7 @@ const user = gql`
     confirmPassword: String!
     email: String!
   }
-  input UpdateUserInput {
+  input UpdateInput {
     username: String!
     status: String!
     skills: String!
@@ -50,10 +50,14 @@ const user = gql`
     devRegister(devRegisterInput: DevRegisterInput): User!
     register(registerInput: RegisterInput): User!
     login(username: String!, password: String!): User!
-    updateUser(updateUserInput: UpdateUserInput): User!
+    updateUser(
+      username: String!
+      status: String!
+      skills: String!
+      image: Upload
+    ): User!
     addFriend(username: String, userID: ID): ADD_FRIEND!
     sendVerification: Boolean!
-
     verifyUser(code: String!): User!
   }
 `;

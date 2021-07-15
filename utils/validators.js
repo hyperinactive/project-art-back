@@ -1,6 +1,8 @@
 /* eslint-disable no-param-reassign */
 // don't actually throw any errors here, just collect them and pass as props
 
+const User = require('../models/User');
+
 const validatePasswordConfirmation = (password, confirmPassword, errors) => {
   if (password.trim() === '') {
     errors.password = 'Password empty';
@@ -86,10 +88,23 @@ const validatePostInput = (body) => {
   };
 };
 
+// username and email validation
+const checkForExistingUsername = async (username) => {
+  const usernameCheck = await User.findOne({ username });
+  return usernameCheck !== null;
+};
+
+const checkForExistingEmail = async (email) => {
+  const emailCheck = await User.findOne({ email });
+  return emailCheck !== null;
+};
+
 module.exports = {
   validateRegisterInput,
   validateLoginInput,
   validatePasswordConfirmation,
   validatePostInput,
   validateLength,
+  checkForExistingEmail,
+  checkForExistingUsername,
 };
