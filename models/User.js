@@ -15,7 +15,7 @@ const userSchema = new Schema({
   password: String,
   emailVerified: {
     type: Boolean,
-    defautl: false,
+    default: false,
   },
   status: {
     type: String,

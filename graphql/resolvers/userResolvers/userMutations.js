@@ -12,6 +12,7 @@ const {
   validateLoginInput,
 } = require('../../../utils/validators');
 const User = require('../../../models/User');
+const KeyCode = require('../../../models/KeyCode');
 const authenticateHTTP = require('../../../utils/authenticateHTTP');
 const {
   // uploadFile,
@@ -50,7 +51,59 @@ const generateToken = (user) =>
     }
   );
 
+const generateRandomCode = (min = 1000, max = 10000) =>
+  Math.floor(Math.random() * (max - min) + min).toString();
+
+// ------------------------------------------------------------
 const Mutation = {
+  devRegister: async (
+    _,
+    { devRegisterInput: { username, email, password, secretKey } }
+  ) => {
+    if (secretKey !== process.env.DEV_SECRET_KEY)
+      throw new ApolloError('Nice try bucko');
+
+    const { valid, errors } = validateRegisterInput(
+      username,
+      email,
+      password,
+      password
+    );
+
+    if (!valid) {
+      throw new UserInputError('Errors', { errors });
+    }
+
+    if (await checkForExistingUsernme(username)) {
+      errors.usernameInUse = 'Username already in use';
+      throw new UserInputError('Username already in use', { errors });
+    }
+
+    if (await checkForExistingEmail(email)) {
+      errors.emailInUse = 'Email already in use';
+      throw new UserInputError('Email already in use', { errors });
+    }
+
+    password = await bcrypt.hash(password, 12);
+    const newUser = User({
+      email,
+      emailVerified: true,
+      username,
+      password,
+      createdAt: new Date().toISOString(),
+      friends: [],
+      projects: [],
+      imageURL: null,
+    });
+    const res = await newUser.save();
+    const token = generateToken(res);
+
+    return {
+      ...res._doc, // where the document is stored, user data, from MongoDB
+      id: res._id, // id is not stored in the doc so we extract it like this
+      token,
+    };
+  },
   // args is the input type (eg our registerInput)
   // register(parent, args, context, info) {
   register: async (
@@ -87,6 +140,7 @@ const Mutation = {
 
     const newUser = User({
       email,
+      emailVerified: false,
       username,
       password,
       createdAt: new Date().toISOString(),
@@ -98,23 +152,33 @@ const Mutation = {
     // result of registering a new user
     const res = await newUser.save();
     // -----------------------------------------------------------------
+
+    const randomCode = generateRandomCode();
+    const keyCode = new KeyCode({
+      code: randomCode,
+      createdAt: new Date().toISOString(),
+      expiresIn: new Date(Date.now() + 1000 * 60 * 10).toISOString(), // + 10min
+      user: res._id,
+    });
+
+    await keyCode.save();
+
     sgMail.setApiKey(process.env.SG_KEY);
     const mail = {
       to: email,
       from: process.env.SG_SENDER,
       subject: 'ProjectArt - Email verification',
-      html: generateTemplate(username, res._id),
+      html: generateTemplate(username, res._id, randomCode),
     };
 
     sgMail
       .send(mail)
       .then(() => {
-        console.log('Email sent');
+        console.log(`Verification sent to ${email}`);
       })
       .catch((error) => {
         console.error(error);
       });
-
     // const transport = createTransport({
     //   service: 'gmail',
     //   auth: {
@@ -183,7 +247,11 @@ const Mutation = {
       token,
     };
   },
-  updateUser: async (_, { username, status, skills, image }, { req }) => {
+  updateUser: async (
+    _,
+    { updateUserInput: { username, status, skills, image } },
+    { req }
+  ) => {
     const user = authenticateHTTP(req);
     const fUser = await User.findById(user.id);
     const errors = {};
@@ -309,17 +377,77 @@ const Mutation = {
       throw new ApolloError('InternalError', { error });
     }
   },
-  verifyUser: async (_, __, { req }) => {
+  sendVerification: async (_, __, { req }) => {
     const user = authenticateHTTP(req);
 
     const fUser = await User.findById(user.id);
 
     if (!fUser) throw new UserInputError('Nonexistent user');
+    if (fUser.emailVerified) throw new UserInputError('Already verified');
 
-    fUser.emailVerified = true;
+    const randomCode = generateRandomCode();
+    const keyCode = new KeyCode({
+      code: randomCode,
+      createdAt: new Date().toISOString(),
+      expiresIn: new Date(Date.now() + 1000 * 60 * 10).toISOString(), // + 10min
+      user: fUser.id,
+    });
+
+    try {
+      await keyCode.save();
+
+      sgMail.setApiKey(process.env.SG_KEY);
+      const mail = {
+        to: fUser.email,
+        from: process.env.SG_SENDER,
+        subject: 'ProjectArt - Email verification',
+        html: generateTemplate(fUser.username, randomCode),
+      };
+
+      sgMail
+        .send(mail)
+        .then(() => {
+          console.log(`Verification sent to ${fUser.email}`);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  },
+  verifyUser: async (_, { code }, { req }) => {
+    const user = authenticateHTTP(req);
+    const errors = {};
+
+    const fUser = await User.findById(user.id);
+
+    // TODO: holy shit, too much repetition
+    // create custom errros/verification?
+    if (!fUser) throw new UserInputError('Nonexistent user');
+    if (fUser.emailVerified) throw new UserInputError('Already verified');
+
+    const keycode = await KeyCode.find({ user: user.id });
+    console.log(keycode);
+    if (keycode.length === 0) throw new UserInputError('Nonexistent keycode');
+
+    if (keycode[0].expiresIn < new Date().toISOString()) {
+      errors.codeExpired = 'Your code has expired';
+    }
+
+    if (Object.keys(errors).length > 0)
+      throw new ApolloError('Internal error', { errors });
+
+    if (code === keycode[0].code) {
+      fUser.emailVerified = true;
+    }
 
     await fUser.save();
+    // await KeyCode.deleteMany({ user: user.id }); // in case the user racked up codes but used none
     const token = generateToken(fUser);
+
     return {
       ...fUser._doc,
       id: fUser._id,
