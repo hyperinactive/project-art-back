@@ -29,4 +29,4 @@ const requestSchema = new Schema({
   },
 });
 
-module.exports = model('ProjectRequest', requestSchema);
+module.exports = model('Request', requestSchema);

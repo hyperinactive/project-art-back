@@ -9,7 +9,6 @@ const {
   validateRegisterInput,
 } = require('../../../../utils/validators');
 const { generateToken } = require('../../../../utils/generate');
-const Notification = require('../../../../models/Notification');
 
 const devRegister = async (
   _,
@@ -51,12 +50,6 @@ const devRegister = async (
     imageURL: null,
   });
 
-  const notification = new Notification({
-    user: newUser._id,
-  });
-
-  newUser.notifications = notification._id;
-  notification.save();
   const res = await newUser.save();
   const token = generateToken(res);
 

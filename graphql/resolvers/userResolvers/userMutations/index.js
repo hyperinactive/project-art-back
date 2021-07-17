@@ -7,6 +7,8 @@ const addFriend = require('./addFriend');
 const sendVerification = require('./sendVerification');
 const verifyUser = require('./verifyUser');
 const updateUser = require('./updateUser');
+const sendFriendRequest = require('./sendFriendRequest');
+const acceptFriendRequest = require('./acceptFriendRequest');
 
 const Mutation = {
   devRegister,
@@ -16,6 +18,8 @@ const Mutation = {
   sendVerification,
   verifyUser,
   updateUser,
+  sendFriendRequest,
+  acceptFriendRequest,
 };
 
 module.exports = Mutation;
