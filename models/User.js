@@ -26,11 +26,6 @@ const userSchema = new Schema({
     default: 'very skilled YEP',
   },
   imageURL: String,
-  interests: [
-    {
-      interest: String,
-    },
-  ],
   createdAt: String,
   projects: [
     {
@@ -44,6 +39,10 @@ const userSchema = new Schema({
       ref: 'User',
     },
   ],
+  notifications: {
+    type: Schema.Types.ObjectId,
+    ref: 'Notification',
+  },
   role: {
     type: String,
     enum: ['member', 'admin', 'developer'],
