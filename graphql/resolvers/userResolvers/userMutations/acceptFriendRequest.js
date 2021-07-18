@@ -22,7 +22,7 @@ const acceptFriendRequest = async (_, { requestID }, { req }) => {
   const receiver = await User.findById(user.id);
   if (!receiver) throw new UserInputError('Nonexistent user');
 
-  receiver.friends.push(user.id);
+  receiver.friends.push(sender.id);
   sender.friends.push(receiver.id);
   await receiver.save();
   await sender.save();

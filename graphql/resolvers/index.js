@@ -4,6 +4,7 @@ const commentResolvers = require('./commentResolvers');
 const projectResolvers = require('./projectResolvers');
 const commentResolver = require('./commentResolvers');
 const messageResolvers = require('./messageResolvers');
+const requestResolvers = require('./requestResolvers');
 
 module.exports = {
   Post: {
@@ -14,10 +15,6 @@ module.exports = {
     likeCount: (parent) => parent.likes.length,
     commentCount: (parent) => parent.comments.length,
   },
-  // TODO: could save some coputation, return to this
-  // PostsChunkResponse: {
-  //   hasMoreItems: (parent) => parent.posts.length < skip + limit,
-  // },
   Project: {
     memberCount: (parent) => parent.members.length,
   },
@@ -27,6 +24,7 @@ module.exports = {
     ...projectResolvers.Query,
     ...commentResolver.Query,
     ...messageResolvers.Query,
+    ...requestResolvers.Query,
   },
   Mutation: {
     ...userResolvers.Mutation,

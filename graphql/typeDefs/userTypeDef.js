@@ -20,14 +20,6 @@ const user = gql`
     sender: User!
     receiver: User!
   }
-  type Request {
-    id: ID!
-    createdAt: String!
-    fromUser: User!
-    toUser: User!
-    type: String!
-    project: Project
-  }
 
   input DevRegisterInput {
     username: String!
@@ -67,7 +59,7 @@ const user = gql`
     addFriend(username: String, userID: ID): ADD_FRIEND!
     sendVerification: Boolean!
     verifyUser(code: String!): User!
-    sendFriendRequest(toUserID: ID!): Request!
+    sendFriendRequest(userID: ID!): Request!
     acceptFriendRequest(requestID: ID!): ADD_FRIEND!
   }
 `;
