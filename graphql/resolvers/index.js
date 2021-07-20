@@ -32,6 +32,7 @@ module.exports = {
     ...commentResolvers.Mutation,
     ...projectResolvers.Mutation,
     ...messageResolvers.Mutation,
+    ...requestResolvers.Mutation,
   },
   Subscription: {
     ...messageResolvers.Subscription,

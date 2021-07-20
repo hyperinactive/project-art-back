@@ -27,10 +27,11 @@ const acceptFriendRequest = async (_, { requestID }, { req }) => {
   await receiver.save();
   await sender.save();
 
-  await Request.deleteOne({ id: requestID });
+  const fRequest = await Request.findByIdAndDelete(requestID);
   return {
     sender,
     receiver,
+    request: fRequest,
   };
 };
 

@@ -19,6 +19,10 @@ const request = gql`
     checkFriendRequests(userID: ID!): CheckRequest!
     getUserRequests: [Request!]
   }
+
+  extend type Mutation {
+    deleteRequest(requestID: ID!): Request!
+  }
 `;
 
 module.exports = request;

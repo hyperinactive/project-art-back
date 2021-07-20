@@ -14,26 +14,25 @@ const sendFriendRequest = async (_, { userID }, { req }) => {
 
   let fRequest = null;
 
-  try {
-    // prevent duplicates
-    fRequest = await Request.findOne({
-      fromUser: user.id,
-      toUser: userID,
-    });
+  // prevent duplicates
+  fRequest = await Request.findOne({
+    fromUser: user.id,
+    toUser: userID,
+  });
 
-    if (fRequest)
-      throw new UserInputError('Request already sent', {
+  if (fRequest) {
+    throw new UserInputError('Duplicate request', {
+      errors: {
         alreadySent: 'Request already sent',
-      });
-  } catch (error) {
-    throw new ApolloError('Internal error', { error });
+      },
+    });
   }
-
   // TODO: resolve mutual requests?
   const request = new Request({
     fromUser: user.id,
     toUser: userID,
     type: 'friendshipRequest',
+    createdAt: new Date().toISOString(),
   });
 
   await request.save();

@@ -19,6 +19,7 @@ const user = gql`
   type ADD_FRIEND {
     sender: User!
     receiver: User!
+    request: Request!
   }
 
   input DevRegisterInput {

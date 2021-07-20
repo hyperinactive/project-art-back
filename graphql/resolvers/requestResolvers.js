@@ -2,6 +2,7 @@ const { UserInputError } = require('apollo-server-express');
 const Request = require('../../models/Request');
 const User = require('../../models/User');
 const authenticateHTTP = require('../../utils/authenticateHTTP');
+const NonexistentError = require('../../utils/errors');
 
 const requestResolvers = {
   Query: {
@@ -9,16 +10,11 @@ const requestResolvers = {
       const user = authenticateHTTP(req);
 
       const fUser = await User.findById(userID);
-      if (!fUser) throw new UserInputError('Nonexistent user');
+      if (!fUser) throw new NonexistentError(['user', userID]);
 
       const request = await Request.findOne({
         fromUser: userID,
         toUser: user.id,
-      });
-
-      console.log({
-        request,
-        isSend: request !== null,
       });
 
       return {
@@ -37,6 +33,22 @@ const requestResolvers = {
         .sort({ createdAt: -1 });
 
       return requests;
+    },
+  },
+  Mutation: {
+    deleteRequest: async (_, { requestID }, { req }) => {
+      const user = authenticateHTTP(req);
+
+      const request = await Request.findByIdAndDelete(requestID);
+      if (!request) throw new NonexistentError(['request', requestID]);
+
+      if (
+        user.id.toString() === request.toUser.toString() ||
+        user.id.toString() === request.fromUser.toString()
+      ) {
+        return request;
+      }
+      throw new UserInputError('Action not allowed');
     },
   },
 };
