@@ -17,6 +17,14 @@ const {
 } = require('../../../../utils/generate');
 const generateTemplate = require('../../../../utils/emailTemplate');
 
+/**
+ * registers users
+ *
+ * @param {*} _ apollo parent resolver
+ * @param {Object.<string, Object.<string, string>>} { registerInput: { username, email, password, confirmPassword } }  register input
+ * @throws {UserInputError} when data is invalid
+ * @return {Object} User type object
+ */
 const register = async (
   _,
   { registerInput: { username, email, password, confirmPassword } }
@@ -28,6 +36,7 @@ const register = async (
     password,
     confirmPassword
   );
+
   // if there were problems take the errors from the errors obj in the validators.js
   // throw an error containing these
   if (!valid) {
@@ -61,6 +70,7 @@ const register = async (
   const res = await newUser.save();
   // -----------------------------------------------------------------
 
+  // generate code to send to the user
   const randomCode = generateRandomCode();
   const keyCode = new KeyCode({
     code: randomCode,
@@ -71,6 +81,8 @@ const register = async (
 
   await keyCode.save();
 
+  // ----------------------------------------------------------------
+  // compose and send mail template with the verification code
   sgMail.setApiKey(process.env.SG_KEY);
   const mail = {
     to: email,
@@ -87,6 +99,7 @@ const register = async (
     .catch((error) => {
       console.error(error);
     });
+  // ----------------------------------------------------------------
 
   const token = generateToken(res);
 

@@ -1,8 +1,9 @@
 const { UserInputError } = require('apollo-server-express');
+
 const Request = require('../../models/Request');
 const User = require('../../models/User');
 const authenticateHTTP = require('../../utils/authenticateHTTP');
-const NonexistentError = require('../../utils/errors');
+const NonexistentError = require('../../utils/errors/NonexistentError');
 
 const requestResolvers = {
   Query: {
@@ -10,7 +11,7 @@ const requestResolvers = {
       const user = authenticateHTTP(req);
 
       const fUser = await User.findById(userID);
-      if (!fUser) throw new NonexistentError(['user', userID]);
+      if (!fUser) throw new NonexistentError({ name: 'user', id: userID });
 
       const request = await Request.findOne({
         fromUser: userID,
@@ -40,7 +41,8 @@ const requestResolvers = {
       const user = authenticateHTTP(req);
 
       const request = await Request.findByIdAndDelete(requestID);
-      if (!request) throw new NonexistentError(['request', requestID]);
+      if (!request)
+        throw new NonexistentError({ name: 'request', id: requestID });
 
       if (
         user.id.toString() === request.toUser.toString() ||

@@ -1,3 +1,10 @@
+/**
+ * generates email html template
+ *
+ * @param {string} username username of the receiver
+ * @param {number} code 4 digit verification number
+ * @returns {string} html template
+ */
 const generateTemplate = (username, code) =>
   `<!DOCTYPE html>
   <html>

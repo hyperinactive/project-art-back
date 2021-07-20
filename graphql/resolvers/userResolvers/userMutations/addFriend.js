@@ -2,13 +2,16 @@ const { UserInputError, ApolloError } = require('apollo-server-express');
 
 const authenticateHTTP = require('../../../../utils/authenticateHTTP');
 const User = require('../../../../models/User');
+const NonexistentError = require('../../../../utils/errors/NonexistentError');
 
-// TODO: obviously we need to accept or decline these, placeholder code, LUL
+// TODO: deprecated
 const addFriend = async (_, { userID, username }, { req }) => {
   const user = authenticateHTTP(req);
 
   if (userID === undefined && username === undefined) {
-    throw new Error('No data provided');
+    throw new UserInputError('No data provided', {
+      errors: { noData: 'No data provided' },
+    });
   }
 
   try {
@@ -20,10 +23,7 @@ const addFriend = async (_, { userID, username }, { req }) => {
     }
 
     const sender = await User.findById(user.id);
-
-    if (!receiver) {
-      throw new UserInputError('No user found');
-    }
+    if (!receiver) throw new NonexistentError({ name: 'user', id: user.id });
 
     if (
       receiver.friends.find(
