@@ -10,6 +10,14 @@ const { checkForExistingUsername } = require('../../../../utils/validators');
 const { deleteFile, uploadBase64 } = require('../../../../utils/storage');
 const { generateToken } = require('../../../../utils/generate');
 
+/**
+ * updates user info
+ *
+ * @param {*} _ apollo parent resolver
+ * @param {username: string, status: string, skills: string, image: string} { username, status, skills, image }
+ * @param {express.Request} { req } request object from the context
+ * @return {Object} user and token
+ */
 const updateUser = async (_, { username, status, skills, image }, { req }) => {
   const user = authenticateHTTP(req);
   const fUser = await User.findById(user.id);

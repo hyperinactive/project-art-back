@@ -1,9 +1,21 @@
 const { model, Schema } = require('mongoose');
 
-// since we're using graphql
-// and we've got restrictions there
-// there is no need to implement them here
-const userSchema = new Schema({
+/**
+ * User
+ *
+ * @typedef {Object} User
+ * @property {string} username
+ * @property {string} email
+ * @property {boolean} emailVerified
+ * @property {string} status
+ * @property {string} skills
+ * @property {string} imageURL
+ * @property {string} createdAt
+ * @property {Array<Schema.Types.ObjectId>} projects
+ * @property {Array<Schema.Types.ObjectId>} friends
+ * @property {string} role
+ */
+const UserSchema = new Schema({
   username: {
     type: String,
     unique: true, // index
@@ -46,4 +58,4 @@ const userSchema = new Schema({
   },
 });
 
-module.exports = model('User', userSchema);
+module.exports = model('User', UserSchema);

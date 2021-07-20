@@ -1,6 +1,20 @@
 const { model, Schema } = require('mongoose');
 
-const postSchema = new Schema({
+/**
+ * Post
+ *
+ * @typedef {Object} Post
+ * @property {string} body
+ * @property {string} username
+ * @property {string} createdAt
+ * @property {string} imageURL
+ * @property {string} editedAt
+ * @property {Array<Schema.Types.ObjectId>} comments
+ * @property {Array<Schema.Types.ObjectId>} likes
+ * @property {Schema.Types.ObjectId} user
+ * @property {Schema.Types.ObjectId} project
+ */
+const PostSchema = new Schema({
   body: String,
   username: String,
   createdAt: String,
@@ -32,4 +46,4 @@ const postSchema = new Schema({
   },
 });
 
-module.exports = model('Post', postSchema);
+module.exports = model('Post', PostSchema);

@@ -25,6 +25,9 @@ const Mutation = {
         throw new UserInputError('Name cannot be longer than 13 characters');
       }
 
+      /**
+       * @type {Project}
+       */
       const group = new Project({
         name,
         description: `create new --project ${name}`,

@@ -1,8 +1,16 @@
 const { Schema, model } = require('mongoose');
 
-// dynamic requests
-// invitations/requests && projects/users
-const requestSchema = new Schema({
+/**
+ * Request
+ *
+ * @typedef {Object} Request
+ * @property {string} createdAt
+ * @property {Schema.Types.ObjectId} toUser
+ * @property {Schema.Types.ObjectId} fromUser
+ * @property {string} type
+ * @property {Schema.Types.ObjectId} project
+ */
+const RequestSchema = new Schema({
   createdAt: {
     type: String,
     required: true,
@@ -29,4 +37,4 @@ const requestSchema = new Schema({
   },
 });
 
-module.exports = model('Request', requestSchema);
+module.exports = model('Request', RequestSchema);

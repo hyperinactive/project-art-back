@@ -13,8 +13,9 @@ const s3 = new aws.S3({
 });
 
 // NOTE: Node v12 or bust, Maximum call stack size exceeded error
+// NOTE: fs-capacitor in the apollo module is outdated
 /**
- * uploads streams to S3
+ * @function uploadFile uploads streams to S3
  *
  * @param {function} createReadStream nodejs functions that reads stream data
  * @param {string} key file name
@@ -50,7 +51,7 @@ const uploadFile = async (createReadStream, key) => {
 };
 
 /**
- * uploads base64 decoded streams to S3
+ * @function uploadBase64 uploads base64 decoded streams to S3
  *
  * @param {Object} stream base64 stream object
  * @param {string} key file name
@@ -76,7 +77,7 @@ const uploadBase64 = async (stream, key) => {
 };
 
 /**
- * get the stream of a file
+ * @function getFileStream get the stream of a file
  *
  * @param {string} key file name
  * @param {Object} res nodejs response object
@@ -107,7 +108,7 @@ const getFileStream = async (key, res) => {
 };
 
 /**
- * deletes file from S3
+ * @function deleteFile deletes file from S3
  *
  * @param {string} key file name
  */

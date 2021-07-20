@@ -1,5 +1,5 @@
 /**
- * generates email html template
+ * @function generateTemplate generates email html template
  *
  * @param {string} username username of the receiver
  * @param {number} code 4 digit verification number

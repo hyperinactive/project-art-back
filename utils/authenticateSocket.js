@@ -2,13 +2,13 @@ const { AuthenticationError } = require('apollo-server-express');
 const jwt = require('jsonwebtoken');
 
 /**
- * authenticates Socket connection
+ * @function authenticateSocket authenticates Socket connection
  *
  * @param {Object} connection apollo's object containing connection info
  * @throws {AuthenticationError} when token doesn't exist/is invalid/has expired
  * @return {Object} decoded user and token info
  */
-const authenticate = (connection) => {
+const authenticateSocket = (connection) => {
   if (connection && connection.context.Authorization) {
     try {
       const token = connection.context.Authorization.split('Bearer ')[1];
@@ -26,4 +26,4 @@ const authenticate = (connection) => {
   }
 };
 
-module.exports = authenticate;
+module.exports = authenticateSocket;

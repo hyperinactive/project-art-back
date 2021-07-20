@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 
 /**
- * signs jwt tokens
- *
+ * @function generateToken signs jwt tokens
+
  * @param {User} user User object
  */
 const generateToken = (user) =>
@@ -22,7 +22,7 @@ const generateToken = (user) =>
   );
 
 /**
- * generates a random 4 digit number
+ * @function generateRandomCode generates a random 4 digit number
  *
  * @param {number} [min=1000] optional min value
  * @param {number} [max=10000] optional max value

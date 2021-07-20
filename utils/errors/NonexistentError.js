@@ -1,5 +1,11 @@
 const { UserInputError } = require('apollo-server-express');
 
+/**
+ * custom apollo error to be thrown for nonexistent entries in the db
+ *
+ * @class NonexistentError
+ * @extends {UserInputError}
+ */
 class NonexistentError extends UserInputError {
   /**
    * Creates an instance of NonexistentError.

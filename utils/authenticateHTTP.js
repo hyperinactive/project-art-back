@@ -2,13 +2,13 @@ const jwt = require('jsonwebtoken');
 const { AuthenticationError } = require('apollo-server-express');
 
 /**
- * authenticates HTTP requests
+ * @function authenticateHTTP authenticates HTTP requests
  *
- * @param {Object} req nodejs HTTP request object
+ * @param {express.Request} req nodejs HTTP request object
  * @throws {AuthenticationError} when token doesn't exist/is invalid/has expired
  * @return {Object}  decoded user and token info
  */
-const authenticate = (req) => {
+const authenticateHTTP = (req) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader) {
@@ -29,4 +29,4 @@ const authenticate = (req) => {
   throw new AuthenticationError('Authorization header must be provided');
 };
 
-module.exports = authenticate;
+module.exports = authenticateHTTP;

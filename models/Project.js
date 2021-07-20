@@ -1,6 +1,18 @@
 const { model, Schema } = require('mongoose');
 
-const projectSchema = new Schema({
+/**
+ * Project
+ *
+ * @typedef {Object} Project
+ * @property {string} name
+ * @property {string} description
+ * @property {string} createdAt
+ * @property {Schema.Types.ObjectId} owner
+ * @property {Array<Schema.Types.ObjectId>} moderators
+ * @property {Array<Schema.Types.ObjectId>} members
+ * @property {Array<Schema.Types.ObjectId>} posts
+ */
+const ProjectSchema = new Schema({
   name: String,
   description: String,
   createdAt: String,
@@ -28,4 +40,4 @@ const projectSchema = new Schema({
   ],
 });
 
-module.exports = model('Project', projectSchema);
+module.exports = model('Project', ProjectSchema);

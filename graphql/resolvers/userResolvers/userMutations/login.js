@@ -6,6 +6,13 @@ const User = require('../../../../models/User');
 const { validateLoginInput } = require('../../../../utils/validators');
 const { generateToken } = require('../../../../utils/generate');
 
+/**
+ * log in users
+ *
+ * @param {function} _ apollo parent resolver
+ * @param {username: string, password: string} { username, password }
+ * @return {Object} user and token
+ */
 const login = async (_, { username, password }) => {
   // destructure the validateLoginInput
   const { errors, valid } = validateLoginInput(username, password);

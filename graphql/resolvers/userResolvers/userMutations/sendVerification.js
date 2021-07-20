@@ -6,14 +6,25 @@ const User = require('../../../../models/User');
 
 const authenticateHTTP = require('../../../../utils/authenticateHTTP');
 const generateTemplate = require('../../../../utils/emailTemplate');
+const NonexistentError = require('../../../../utils/errors/NonexistentError');
 const { generateRandomCode } = require('../../../../utils/generate');
 
+/**
+ * create and send verification mail
+ *
+ * @param {functions} _ apollo parent resolver
+ * @param {Object} __ function arguments
+ * @param {express.Request} { req } request object from the context
+ * @throws {NonexistentError} when user doesn't exist
+ * @throws {UserInputError} when user is already verified
+ * @return {boolean} mail sent verification
+ */
 const sendVerification = async (_, __, { req }) => {
   const user = authenticateHTTP(req);
 
   const fUser = await User.findById(user.id);
 
-  if (!fUser) throw new UserInputError('Nonexistent user');
+  if (!fUser) throw new NonexistentError({ name: 'user', id: user.id });
   if (fUser.emailVerified) throw new UserInputError('Already verified');
 
   const randomCode = generateRandomCode();

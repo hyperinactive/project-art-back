@@ -62,6 +62,9 @@ const commentResolver = {
         ).execPopulate();
 
         if (post) {
+          /**
+           * @type {Comment}
+           */
           const comment = new Comment({
             body,
             user: user.id,

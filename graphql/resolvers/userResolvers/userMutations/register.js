@@ -18,12 +18,12 @@ const {
 const generateTemplate = require('../../../../utils/emailTemplate');
 
 /**
- * registers users
+ * registers unverified users
  *
- * @param {*} _ apollo parent resolver
+ * @param {function} _ apollo parent resolver
  * @param {Object.<string, Object.<string, string>>} { registerInput: { username, email, password, confirmPassword } }  register input
  * @throws {UserInputError} when data is invalid
- * @return {Object} User type object
+ * @return {Object} user and token
  */
 const register = async (
   _,
@@ -55,6 +55,9 @@ const register = async (
 
   const newPassword = await bcrypt.hash(password, 12);
 
+  /**
+   * @type {User}
+   */
   const newUser = User({
     email,
     emailVerified: false,

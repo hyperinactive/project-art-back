@@ -10,6 +10,13 @@ const {
 } = require('../../../../utils/validators');
 const { generateToken } = require('../../../../utils/generate');
 
+/**
+ * register users without email verification
+ *
+ * @param {function} _ apollo parent resolver
+ * @param {Object.<string, Object.<string, string>>} { devRegisterInput: { username, email, password, secretKey } }
+ * @return {Object.<User, string>} user and token
+ */
 const devRegister = async (
   _,
   { devRegisterInput: { username, email, password, secretKey } }
@@ -39,6 +46,10 @@ const devRegister = async (
   }
 
   const newPassword = await bcrypt.hash(password, 12);
+
+  /**
+   * @type {User}
+   */
   const newUser = User({
     email,
     emailVerified: true,

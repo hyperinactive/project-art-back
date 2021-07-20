@@ -4,6 +4,16 @@ const authenticateHTTP = require('../../../../utils/authenticateHTTP');
 const InvalidActionError = require('../../../../utils/errors/InvalidActionError');
 const NonexistentError = require('../../../../utils/errors/NonexistentError');
 
+/**
+ * accepts friend request
+ *
+ * @param {function} _ apollo parent resolver
+ * @param {string} { requestID } id of a request
+ * @param {express.Request} { req } request object from the context
+ * @throws {InvalidActionError} when users try to accept their own requests
+ * @throws {NonexistentError} when requests/receivers/senders are nonexistent
+ * @return {sender: User, receiver: User, request: Request>} sender, receiver and request
+ */
 const acceptFriendRequest = async (_, { requestID }, { req }) => {
   const user = authenticateHTTP(req);
 

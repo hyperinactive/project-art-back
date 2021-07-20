@@ -7,6 +7,14 @@ const User = require('../../../../models/User');
 const authenticateHTTP = require('../../../../utils/authenticateHTTP');
 const { generateToken } = require('../../../../utils/generate');
 
+/**
+ * verifies users
+ *
+ * @param {*} _ apollo parent resolver
+ * @param {code: string} { code } function arguments
+ * @param {express.Request} { req } request object from the context
+ * @return {Object} user and token
+ */
 const verifyUser = async (_, { code }, { req }) => {
   const user = authenticateHTTP(req);
   const errors = {};
@@ -14,7 +22,7 @@ const verifyUser = async (_, { code }, { req }) => {
   const fUser = await User.findById(user.id);
 
   // TODO: holy shit, too much repetition
-  // create custom errros/verification?
+  // create custom errors/verification?
   if (!fUser) throw new UserInputError('Nonexistent user');
   if (fUser.emailVerified) throw new UserInputError('Already verified');
 

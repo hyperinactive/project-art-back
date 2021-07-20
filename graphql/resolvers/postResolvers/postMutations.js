@@ -12,6 +12,14 @@ const { uploadFile } = require('../../../utils/storage');
 const allowedImageTypes = require('../../../utils/types');
 
 const Mutation = {
+  /**
+   * @function deletePost deletes a post
+   *
+   * @param {function} _ apollo parent resolver
+   * @param {string} { postID }
+   * @param {Express.Request} { req }
+   * @return {*}
+   */
   deletePost: async (_, { postID }, { req }) => {
     const user = authenticateHTTP(req);
     try {
@@ -97,6 +105,9 @@ const Mutation = {
       imageURL = null;
     }
 
+    /**
+     * @type {Post}
+     */
     const newPost = new Post({
       body,
       user: user.id, // since the token only has id, we can't pass the user object without querying for it

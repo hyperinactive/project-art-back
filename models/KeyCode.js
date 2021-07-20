@@ -1,6 +1,15 @@
 const { model, Schema } = require('mongoose');
 
-const keyCodeSchema = {
+/**
+ * KeyCode
+ *
+ * @typedef {Object} KeyCode
+ * @property {string} code
+ * @property {string} createdAt
+ * @property {string} expires
+ * @property {Schema.Types.ObjectId} user
+ */
+const KeyCodeSchema = {
   code: String,
   createdAt: String,
   expires: String,
@@ -10,4 +19,4 @@ const keyCodeSchema = {
   },
 };
 
-module.exports = model('KeyCode', keyCodeSchema);
+module.exports = model('KeyCode', KeyCodeSchema);
