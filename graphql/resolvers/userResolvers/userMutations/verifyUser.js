@@ -26,24 +26,25 @@ const verifyUser = async (_, { code }, { req }) => {
   if (!fUser) throw new UserInputError('Nonexistent user');
   if (fUser.emailVerified) throw new UserInputError('Already verified');
 
-  const keycode = await KeyCode.find({ user: user.id });
-  console.log(keycode);
-  if (keycode.length === 0) throw new UserInputError('Nonexistent keycode');
+  const keycodes = await KeyCode.find({ user: user.id })
+    .sort({ createdAt: 1 })
+    .limit(1);
+  if (keycodes.length === 0) throw new UserInputError('Nonexistent keycode');
 
-  if (keycode[0].expiresIn < new Date().toISOString()) {
+  if (keycodes[0].expiresIn < new Date().toISOString()) {
     errors.codeExpired = 'Your code has expired';
   }
 
   if (Object.keys(errors).length > 0)
     throw new ApolloError('Internal error', { errors });
 
-  if (code === keycode[0].code) {
+  if (code === keycodes[0].code) {
     fUser.emailVerified = true;
   }
 
   await fUser.save();
-  // await KeyCode.deleteMany({ user: user.id }); // in case the user racked up codes but used none
-  const token = generateToken(fUser);
+  await KeyCode.deleteMany({ user: user.id }); // in case the user racked up codes but used none
+  const token = await generateToken(fUser);
 
   return {
     ...fUser._doc,
