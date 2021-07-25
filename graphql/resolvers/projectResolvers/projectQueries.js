@@ -5,6 +5,11 @@ const User = require('../../../models/User');
 const authenticateHTTP = require('../../../utils/authenticateHTTP');
 
 const Query = {
+  /**
+   * get all projects
+   *
+   * @return {Array<Project>}
+   */
   getProjects: async () => {
     try {
       const groups = await Project.find({})
@@ -18,6 +23,14 @@ const Query = {
   // to be call when an overview of the project is needed
   // NOTE: populate only when necessary
   // TODO: multiple requests to fetch just the right amount of data
+  /**
+   * get project data by id
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.projectID
+   * @return {Project}
+   */
   getProject: async (_, { projectID }) => {
     try {
       const project = await Project.findById(projectID);
@@ -32,6 +45,16 @@ const Query = {
       throw new ApolloError('InternalError', { error });
     }
   },
+  /**
+   * get member's data of a project
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.projectID
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Array<User>}
+   */
   getProjectMembers: async (_, { projectID }, { req }) => {
     authenticateHTTP(req);
     try {
@@ -53,6 +76,16 @@ const Query = {
       throw new ApolloError('InternalError', { error });
     }
   },
+  /**
+   * get project's data of a user
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.userID
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Array.<Project>}
+   */
   getUserProjects: async (_, { userID }, { req }) => {
     const user = authenticateHTTP(req);
     const searchID = userID === undefined ? user.id : userID;

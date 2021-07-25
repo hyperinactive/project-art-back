@@ -3,7 +3,7 @@ const { model, Schema } = require('mongoose');
 /**
  * KeyCode
  *
- * @typedef {Object} KeyCode
+ * @typedef KeyCode
  * @property {string} code
  * @property {string} createdAt
  * @property {string} expires

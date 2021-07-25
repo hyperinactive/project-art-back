@@ -9,6 +9,16 @@ const User = require('../../../models/User');
 const authenticateHTTP = require('../../../utils/authenticateHTTP');
 
 const Mutation = {
+  /**
+   * creates a project
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.name
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Project}
+   */
   createProject: async (_, { name }, { req }) => {
     const user = authenticateHTTP(req);
     const errors = {};
@@ -28,7 +38,7 @@ const Mutation = {
       /**
        * @type {Project}
        */
-      const group = new Project({
+      const project = new Project({
         name,
         description: `create new --project ${name}`,
         owner: user.id,
@@ -38,14 +48,24 @@ const Mutation = {
 
       const fUser = await User.findById(user.id);
 
-      fUser.projects.push(group.id);
-      await group.save();
+      fUser.projects.push(project.id);
+      await project.save();
       await fUser.save();
-      return await group.populate('owner').populate('members').execPopulate();
+      return await project.populate('owner').populate('members').execPopulate();
     } catch (error) {
       throw new ApolloError('InternalError', { error });
     }
   },
+  /**
+   * adds a member to a project
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.projectID
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {}
+   */
   addMember: async (_, { projectID }, { req }) => {
     const user = authenticateHTTP(req);
     const errors = {};
@@ -78,6 +98,18 @@ const Mutation = {
   // TODO: have multiple ways of updating groups
   // maybe check for each update and call different update functions
   // or just have many different update funcs idk
+  /**
+   * updates project info
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.name
+   * @param {string} args.description
+   * @param {string} args.projectID
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Project}
+   */
   updateProject: async (_, { name, description, projectID }, { req }) => {
     const user = authenticateHTTP(req);
     const errors = {};

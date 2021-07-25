@@ -8,6 +8,11 @@ const Project = require('../../../models/Project');
 const authenticateHTTP = require('../../../utils/authenticateHTTP');
 
 const Query = {
+  /**
+   * get all posts
+   *
+   * @return {Array.<Post>}
+   */
   getPosts: async () => {
     try {
       const posts = await Post.find({})
@@ -21,6 +26,16 @@ const Query = {
       throw new Error(error);
     }
   },
+  /**
+   * get a post by its id
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.postID
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Post}
+   */
   getPost: async (_, { postID }, { req }) => {
     authenticateHTTP(req);
 
@@ -49,6 +64,18 @@ const Query = {
       throw new Error(error);
     }
   },
+  /**
+   * deprecated* feed of posts
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.projectID
+   * @param {string} args.cursor
+   * @param {number} [args.skip = 10]
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Array.<Post>}
+   */
   getPostsFeed: async (_, { projectID, cursor, skip = 10 }, { req }) => {
     const user = authenticateHTTP(req);
     const errors = {};
@@ -128,6 +155,17 @@ const Query = {
       throw new ApolloError('InternalError', { error });
     }
   },
+  /**
+   * get next 10 posts after the cursor
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.projectID
+   * @param {string} args.cursor
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Array.<Post>}
+   */
   getFeed: async (_, { projectID, cursor }, { req }) => {
     const user = authenticateHTTP(req);
     const limit = 10;
@@ -194,6 +232,16 @@ const Query = {
       throw new ApolloError('InternalError', { error });
     }
   },
+  /**
+   * get all posts of a project
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.projectID
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Array.<Post>}
+   */
   getProjectPosts: async (_, { projectID }, { req }) => {
     const user = authenticateHTTP(req);
     const errors = {};

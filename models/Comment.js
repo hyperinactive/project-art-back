@@ -5,7 +5,7 @@ const { model, Schema } = require('mongoose');
 /**
  * Comment
  *
- * @typedef {Object} Comment
+ * @typedef Comment
  * @property {string} body
  * @property {string} username
  * @property {string} createdAt

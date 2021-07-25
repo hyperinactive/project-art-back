@@ -13,12 +13,14 @@ const allowedImageTypes = require('../../../utils/types');
 
 const Mutation = {
   /**
-   * @function deletePost deletes a post
+   * deletes a post
    *
-   * @param {function} _ apollo parent resolver
-   * @param {string} { postID }
-   * @param {Express.Request} { req }
-   * @return {*}
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.postID
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Post}
    */
   deletePost: async (_, { postID }, { req }) => {
     const user = authenticateHTTP(req);
@@ -39,6 +41,16 @@ const Mutation = {
       throw new ApolloError('InternalError', { error });
     }
   },
+  /**
+   * Add/remove like form a post
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.postID
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Post}
+   */
   likeTogglePost: async (_, { postID }, { req }) => {
     const { username } = authenticateHTTP(req);
 
@@ -62,8 +74,19 @@ const Mutation = {
 
     throw new UserInputError('Post not found');
   },
-  // TODO: to be the default way of posting stuff
-  // as to not break the current app, it remains separate
+  /**
+   * Creates posts
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.projectID
+   * @param {string} args.body
+   * @param {string?} args.image
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @param {PubSub} context.pubsub
+   * @return {Post}
+   */
   createProjectPost: async (_, { projectID, body, image }, { req, pubsub }) => {
     const errors = {};
     const user = authenticateHTTP(req);
@@ -99,6 +122,7 @@ const Mutation = {
         // imageURL = `http://localhost:4000/${key}`;
         imageURL = key;
       } catch (error) {
+        console.error(error);
         throw new Error('Error uploading the file', error);
       }
     } else {
@@ -127,7 +151,17 @@ const Mutation = {
 
     return res;
   },
-  // TODO: image edit
+  /**
+   * Edits a post
+   *
+   * @param {*} _
+   * @param {Object} args
+   * @param {string} args.postID
+   * @param {string} args.body
+   * @param {Object} context
+   * @param {Express.Request} context.req
+   * @return {Post}
+   */
   editPost: async (_, { postID, body }, { req }) => {
     const user = authenticateHTTP(req);
     const errors = {};

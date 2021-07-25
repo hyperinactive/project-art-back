@@ -3,7 +3,7 @@ const { Schema, model } = require('mongoose');
 /**
  * Message
  *
- * @typedef {Object} Message
+ * @typedef Message
  * @property {string} content
  * @property {string} createdAt
  * @property {Schema.Types.ObjectId} fromUser

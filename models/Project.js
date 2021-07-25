@@ -3,7 +3,7 @@ const { model, Schema } = require('mongoose');
 /**
  * Project
  *
- * @typedef {Object} Project
+ * @typedef Project
  * @property {string} name
  * @property {string} description
  * @property {string} createdAt
