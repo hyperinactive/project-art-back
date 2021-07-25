@@ -197,6 +197,9 @@ const messageResolver = {
           throw new UserInputError('No friendship, no messaging');
         }
 
+        /**
+         * @type {Message}
+         */
         const message = new Message({
           toUser: recipient.id,
           fromUser: user.id,

@@ -1,6 +1,15 @@
 const { Schema, model } = require('mongoose');
 
-const messageSchema = new Schema({
+/**
+ * Message
+ *
+ * @typedef Message
+ * @property {string} content
+ * @property {string} createdAt
+ * @property {Schema.Types.ObjectId} fromUser
+ * @property {Schema.Types.ObjectId} toUser
+ */
+const MessageSchema = new Schema({
   content: String,
   createdAt: String,
   fromUser: {
@@ -13,4 +22,4 @@ const messageSchema = new Schema({
   },
 });
 
-module.exports = model('Message', messageSchema);
+module.exports = model('Message', MessageSchema);

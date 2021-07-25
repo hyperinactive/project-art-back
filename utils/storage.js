@@ -13,7 +13,14 @@ const s3 = new aws.S3({
 });
 
 // NOTE: Node v12 or bust, Maximum call stack size exceeded error
-// eslint-disable-next-line consistent-return
+// NOTE: fs-capacitor in the apollo module is outdated
+/**
+ * @function uploadFile uploads streams to S3
+ *
+ * @param {function} createReadStream nodejs functions that reads stream data
+ * @param {string} key file name
+ * @return {function} S3 upload function with uploadParams
+ */
 const uploadFile = async (createReadStream, key) => {
   const uploadParams = {
     Bucket: bucketName,
@@ -43,6 +50,13 @@ const uploadFile = async (createReadStream, key) => {
   });
 };
 
+/**
+ * @function uploadBase64 uploads base64 decoded streams to S3
+ *
+ * @param {Object} stream base64 stream object
+ * @param {string} key file name
+ * @return {function} S3 upload function with uploadParams
+ */
 const uploadBase64 = async (stream, key) => {
   const uploadParams = {
     Bucket: bucketName,
@@ -62,6 +76,13 @@ const uploadBase64 = async (stream, key) => {
   });
 };
 
+/**
+ * @function getFileStream get the stream of a file
+ *
+ * @param {string} key file name
+ * @param {Object} res nodejs response object
+ * @return {function} functions that reads the stream and pipes it to the res
+ */
 const getFileStream = async (key, res) => {
   const downloadParams = {
     Bucket: bucketName,
@@ -86,6 +107,11 @@ const getFileStream = async (key, res) => {
   // }
 };
 
+/**
+ * @function deleteFile deletes file from S3
+ *
+ * @param {string} key file name
+ */
 const deleteFile = async (key) =>
   new Promise((resolve, reject) => {
     s3.deleteObject(

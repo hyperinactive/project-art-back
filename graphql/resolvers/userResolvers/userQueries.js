@@ -1,21 +1,21 @@
-const {
-  UserInputError,
-  AuthenticationError,
-  ApolloError,
-} = require('apollo-server-express');
+const { UserInputError, ApolloError } = require('apollo-server-express');
 
 const authenticateHTTP = require('../../../utils/authenticateHTTP');
 const User = require('../../../models/User');
 
 const Query = {
+  /**
+   * list all users
+   *
+   * @param {*} _ apollo parent resolver
+   * @param {*} __ function arguments
+   * @param {req: express.Request} { req } request object from the context
+   * @return {*}
+   */
   getUsers: async (_, __, { req }) => {
     authenticateHTTP(req);
     let users = null;
-    try {
-      users = await User.find({});
-    } catch (error) {
-      throw new AuthenticationError('Action not allowed', { error });
-    }
+    users = await User.find({});
     return users;
   },
   getUser: async (_, { userID }) => {

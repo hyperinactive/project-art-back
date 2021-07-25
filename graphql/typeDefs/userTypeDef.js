@@ -19,21 +19,26 @@ const user = gql`
   type ADD_FRIEND {
     sender: User!
     receiver: User!
+    request: Request!
   }
 
+  input DevRegisterInput {
+    username: String!
+    password: String!
+    email: String!
+    secretKey: String!
+  }
   input RegisterInput {
     username: String!
     password: String!
     confirmPassword: String!
     email: String!
   }
-  input UpdateUserInput {
-    userID: ID!
+  input UpdateInput {
     username: String!
-    # placeholders: to be changed via mail or smth
-    email: String!
-    password: String!
-    confirmPassword: String!
+    status: String!
+    skills: String!
+    image: Upload
   }
 
   extend type Query {
@@ -43,8 +48,9 @@ const user = gql`
     getUserFriends(userID: ID!): [User!]
   }
   extend type Mutation {
+    devRegister(devRegisterInput: DevRegisterInput): User!
     register(registerInput: RegisterInput): User!
-    login(username: String!, password: String!): User! # since we only need 2 things, no types were created, but it CAN be done!
+    login(username: String!, password: String!): User!
     updateUser(
       username: String!
       status: String!
@@ -52,6 +58,10 @@ const user = gql`
       image: Upload
     ): User!
     addFriend(username: String, userID: ID): ADD_FRIEND!
+    sendVerification: Boolean!
+    verifyUser(code: String!): User!
+    sendFriendRequest(userID: ID!): Request!
+    acceptFriendRequest(requestID: ID!): ADD_FRIEND!
   }
 `;
 

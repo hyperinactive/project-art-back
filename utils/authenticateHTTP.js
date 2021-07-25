@@ -1,7 +1,14 @@
 const jwt = require('jsonwebtoken');
 const { AuthenticationError } = require('apollo-server-express');
 
-const authenticate = (req) => {
+/**
+ * @function authenticateHTTP authenticates HTTP requests
+ *
+ * @param {express.Request} req nodejs HTTP request object
+ * @throws {AuthenticationError} when token doesn't exist/is invalid/has expired
+ * @return {Object}  decoded user and token info
+ */
+const authenticateHTTP = (req) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader) {
@@ -15,9 +22,11 @@ const authenticate = (req) => {
         throw new AuthenticationError('Invalid/Expired token');
       }
     }
-    throw new Error('Authentication token must be a Bearer token');
+    throw new AuthenticationError(
+      'Authentication token must be a Bearer token'
+    );
   }
-  throw new Error('Authorization header must be provided');
+  throw new AuthenticationError('Authorization header must be provided');
 };
 
-module.exports = authenticate;
+module.exports = authenticateHTTP;

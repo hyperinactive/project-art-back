@@ -1,3 +1,4 @@
+/** @type {Object.<string, string>} */
 const allowedImageTypes = {
   JPEG: 'image/jpeg',
   JPG: 'image/jpg',
